@@ -567,11 +567,13 @@ function hideTextCover() {
 }
 
 /* Tap to advance */
-barrel.addEventListener("click", ()=>{
+barrel.addEventListener("click", () => {
+  audioCtx.resume();  // required to unlock audio context
+
   if (dragging) return;
   if (barrel.classList.contains("playing")) return;
   idx++;
-  showMessage(idx);
+  showMessage(idx);    // <-- this will now play the MP4
 });
 
 /* -------------------- VOLUME DRAG (GainNode) -------------------- */
