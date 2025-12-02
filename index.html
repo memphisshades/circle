@@ -73,7 +73,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at center, #111 0%, #000 70%);
+  background: black;
 }
 .barrel {
   position: relative;
@@ -102,9 +102,17 @@ html, body {
 
 
 @keyframes pulseCircle {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(255,255,255,0.12); }
-  50% { transform: scale(1.05); box-shadow: 0 0 60px rgba(196,0,47,0.4); }
+  0%, 100% { 
+    transform: scale(1); 
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);  /* Brighter outer glow */
+  }
+  50% { 
+    transform: scale(1.03); 
+    box-shadow: 0 0 30px rgba(196, 0, 47, 0.6);  /* Brighter, more intense red pulse */
+  }
 }
+
+
 .aperture {
   position: absolute;
   top: 50%;
@@ -113,7 +121,7 @@ html, body {
   width: 60%;
   height: 60%;
   border-radius: 50%;
-  background: radial-gradient(circle at center, #000 30%, #030303 60%);
+  background: black;
   box-shadow: inset 0 0 80px #000;
   z-index: 2;
   overflow: hidden;
@@ -361,50 +369,62 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-/* Starfield */
+/* -------------------- Starfield -------------------- */
 function createStars(count = 100){
   stars = [];
-  for (let i=0;i<count;i++) {
+  for (let i = 0; i < count; i++) {
     stars.push({
-      x: Math.random()*starCanvas.width,
-      y: Math.random()*starCanvas.height,
-      r: Math.random()*2+0.5,
-      vx: (Math.random()-0.5)*0.3,
-      vy: (Math.random()-0.5)*0.3,
-      alpha: Math.random()*0.7+0.3,
-      color: `hsl(${Math.random()*10+350},100%,80%)`
+      x: Math.random() * starCanvas.width,
+      y: Math.random() * starCanvas.height,
+      r: Math.random() * 2 + 0.5,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      alpha: Math.random() * 0.7 + 0.3,
+      color: `hsl(${Math.random() * 10 + 350}, 100%, 80%)`  // Star color (mostly red hues)
     });
   }
 }
+
 function drawStars(){
-  ctx.clearRect(0,0,starCanvas.width,starCanvas.height);
+  // Fill the background with black
+  ctx.fillStyle = "#000";  // Ensures the background is fully black
+  ctx.fillRect(0, 0, starCanvas.width, starCanvas.height);
+
   ctx.save();
   ctx.beginPath();
-  ctx.arc(starCanvas.width/2,starCanvas.height/2,starCanvas.width/2,0,Math.PI*2);
+  ctx.arc(starCanvas.width / 2, starCanvas.height / 2, starCanvas.width / 2, 0, Math.PI * 2);
   ctx.clip();
 
-  for (let s of stars){
+  // Draw each star
+  for (let s of stars) {
     ctx.beginPath();
-    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-    ctx.fillStyle = s.color;
-    ctx.globalAlpha = s.alpha;
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = s.color;  // Star color based on HSL
+    ctx.globalAlpha = s.alpha;  // Star alpha (transparency)
     ctx.fill();
-    s.x+=s.vx; s.y+=s.vy;
-    if(s.x<0)s.x=starCanvas.width;
-    if(s.x>starCanvas.width)s.x=0;
-    if(s.y<0)s.y=starCanvas.height;
-    if(s.y>starCanvas.height)s.y=0;
+
+    // Update the star's position (wrap around if it goes off the screen)
+    s.x += s.vx;
+    s.y += s.vy;
+    if (s.x < 0) s.x = starCanvas.width;
+    if (s.x > starCanvas.width) s.x = 0;
+    if (s.y < 0) s.y = starCanvas.height;
+    if (s.y > starCanvas.height) s.y = 0;
   }
 
   ctx.restore();
-  requestAnimationFrame(drawStars);
+  requestAnimationFrame(drawStars);  // Continue the animation loop
 }
-function startStarfield(){ 
+
+function startStarfield() { 
   starCanvas.style.display = "block"; 
   createStars(); 
   drawStars(); 
 }
-function stopStarfield(){ starCanvas.style.display = "none"; }
+
+function stopStarfield() { 
+  starCanvas.style.display = "none"; 
+}
 
 /* -------------------- SHOW SLIDE -------------------- */
 
