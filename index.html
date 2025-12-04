@@ -788,6 +788,25 @@ window.addEventListener('resize', () => {
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(scaleUI, 50);
 });
+
+  // -----------------------------------------------------------
+// BEGIN: iPad/iPhone Orientation Rotation Fix (SAFE TO REMOVE)
+// -----------------------------------------------------------
+//
+// Safari gives incorrect viewport sizes for ~100ms after rotation.
+// This waits a bit before re-scaling the UI to avoid wrong layout.
+//
+
+window.addEventListener('orientationchange', () => {
+  setTimeout(scaleUI, 150);
+});
+
+//
+// ---------------------------
+// END: Orientation Fix Block
+// ---------------------------
+
+  
 </script>
 
 
