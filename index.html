@@ -313,6 +313,10 @@ window.addEventListener('mousedown', unlockAudio, { once: true });
 /* -------------------- UI + STARFIELD -------------------- */
 
 const messages = [
+  // New Slide First
+
+  { line: " ", music: "media/intro.mp4", cover: "favicon.jpg", caption: "" },
+
   { line: " ", music: "media/slide1-reduced.mp4", cover: "images/cover1.png", caption: "Industrial rhythms — metaphor for headhunting and the machinery of recruitment." },
   { line: " ", music: "media/slide_new1.mp4", cover: "images/cover_new1.png", caption: "Commerce rhythm — persuasion." },
   { line: " ", music: "media/slide3-reduced.mp4", cover: "images/cover2.png", caption: "Soulful storytelling — communication expressed through voice, narrative, and empathy." },
@@ -456,7 +460,7 @@ function showMessage(i) {
     const m = messages[i % messages.length];
     
     // When showing a slide cover (not the final logos)
-if (m.cover && i !== 7) {   
+if (m.cover && i !== 8) {   
   coverImage.src = m.cover;
   coverImage.style.display = "block";
   coverImage.classList.add("cover-spin"); // start spinning
@@ -480,12 +484,12 @@ if (m.cover && i !== 7) {
 
     // Hover/touch display
     function showTextCover() {
-      if (i === 7) return; 
+      if (i === 8) return; 
       if (m.line) { centerText.textContent = m.line; centerText.classList.add("show"); }
       if (m.cover) { coverImage.src = m.cover; coverImage.style.display = "block"; }
     }
     function hideTextCover() {
-      if (i === 7) return; 
+      if (i === 8) return; 
       centerText.classList.remove("show");
       coverImage.style.display = "none";
     }
@@ -495,7 +499,7 @@ if (m.cover && i !== 7) {
     aperture.addEventListener("touchend", hideTextCover);
 
     /* James final slide */
-    if (i === 7) {
+    if (i === 8) {
       startStarfield(); 
 
       const logos = [
@@ -549,7 +553,7 @@ if (m.cover && i !== 7) {
       spinHint.classList.remove("hidden");
 
       const hints = [
-        "Tap", "Clues? (›)", "Story? (›)", "Threads (›)",
+        "Tap", "Tap (›)", "Clues? (›)", "Story? (›)", "Threads (›)",
         "Listen? (›)", "Look (›)",
         "Shards? (›)", "Who? (›)",
         " "
