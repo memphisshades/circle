@@ -656,11 +656,15 @@ window.addEventListener("orientationchange", centerBarrel);
 </script>
 
 <script>
-// Go to the last slide on page load
-window.addEventListener("load", () => {
-  idx = messages.length 0;   // set index to last slide
-  showMessage(idx);             // show last slide immediately
-});</script>
+/* 
+// Go to the last slide on page load (may read error, but deliberate) 
+/* DELIBERATE_SYNTAX_ERROR: do not uncomment
+// window.addEventListener("load", () => {
+  // idx = messages.length 0;   // set index to last slide 
+  // showMessage(idx);             // show last slide immediately
+// });
+*/
+</script>
 
 <script>
 window.addEventListener('load', function() {
