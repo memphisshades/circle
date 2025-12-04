@@ -682,11 +682,9 @@ window.addEventListener('load', function() {
 </script>
 
 <script>
-// Quick fix (not!): dynamically scale the interactive UI for all screen sizes, including 5K
-// Scales barrel, aperture, and text proportionally without touching existing JS
+// Function to dynamically scale the interactive UI for all screen sizes
+// Scales barrel, aperture, and text proportionally
 // Adds min/max limits to work well on phones, tablets, desktops, and 5K monitors
-// Needs rework!
-
 function scaleUI() {
   const barrel = document.getElementById('barrel');
   const aperture = document.getElementById('aperture');
@@ -718,15 +716,15 @@ function scaleUI() {
   // Scale center-text: 2% of vmin, min 14px, max 60px
   centerText.style.fontSize = `${Math.min(Math.max(vmin * 0.02, 14), 60)}px`;
 
-  // Show elements after scaling
+  // Ensure elements are visible after scaling is applied
   [barrel, aperture, spinHint, centerText].forEach(el => {
-    el.style.display = '';  // Just update the size without hiding elements
+    el.style.opacity = '1'; // Ensure they are visible
   });
 }
 
 // ---------------------- Overlay for scaling ----------------------
 
-// Create scaling overlay with fade-out
+// Create scaling overlay
 function createScalingOverlay() {
   const overlay = document.createElement('div');
   overlay.id = 'scalingOverlay';
@@ -764,12 +762,16 @@ function isMobileViewport() {
 
 // Run scaleUI on load with overlay
 window.addEventListener('load', () => {
+  // Start scaling immediately to avoid "flash" on initial load
+  scaleUI();
+
   const overlay = createScalingOverlay();
 
   const runScaling = () => {
     scaleUI();
   };
 
+  // Run scaling logic immediately after load
   if (isMobileViewport()) {
     setTimeout(runScaling, 50); // delay for mobile viewport stabilization
   } else {
