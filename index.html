@@ -270,7 +270,6 @@ canvas#starfield {
     <div class="spin-hint" id="spinHint">Tap | Touch</div>
   </div>
 </div>
-
 <script>
 /* -------------------- AUDIO ENGINE (GainNode) -------------------- */
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -314,59 +313,15 @@ window.addEventListener('mousedown', unlockAudio, { once: true });
 /* -------------------- UI + STARFIELD -------------------- */
 
 const messages = [
-  { 
-    line: " ", 
-    music: "media/slide1-reduced.mp4", 
-    cover: "images/cover1.png",
-    caption: "Industrial rhythms — metaphor for headhunting and the machinery of recruitment."
-  },
-  
-  {
-  line: " ", 
-  music: "media/slide_new1.mp4",
-  cover: "images/cover_new1.png",
-  caption: "Commerce rhythm — persuasion."
-},
-  
-  { 
-    line: " ", 
-    music: "media/slide3-reduced.mp4", 
-    cover: "images/cover2.png",
-    caption: "Soulful storytelling — communication expressed through voice, narrative, and empathy."
-  },
-  { 
-    line: " ", 
-    music: "media/slide2-reduced.mp4", 
-    cover: "images/cover3.png",
-    caption: "Electronic pulse — technology."
-  },
-  { 
-    line: " ", 
-    music: "media/slide4-reduced.mp4", 
-    cover: "images/cover4.png",
-    caption: "Pulse of connection — awareness."
-  },
-  { 
-    line: " ", 
-    music: "media/slide5-reduced.mp4", 
-    cover: "images/cover5.png",
-    caption: "Pop anthem — artistry."
-  },
-  { 
-    line: " ", 
-    music: "media/slide6-reduced.mp4", 
-    cover: "images/cover6.png",
-    caption: "Voice of inquiry — shards of identity."
-  },
-  { 
-    line: "I'm James Tobin.", 
-    music: "media/slide7.mp4",
-    caption: "Empowered closure — affirmation."
-  }
+  { line: " ", music: "media/slide1-reduced.mp4", cover: "images/cover1.png", caption: "Industrial rhythms — metaphor for headhunting and the machinery of recruitment." },
+  { line: " ", music: "media/slide_new1.mp4", cover: "images/cover_new1.png", caption: "Commerce rhythm — persuasion." },
+  { line: " ", music: "media/slide3-reduced.mp4", cover: "images/cover2.png", caption: "Soulful storytelling — communication expressed through voice, narrative, and empathy." },
+  { line: " ", music: "media/slide2-reduced.mp4", cover: "images/cover3.png", caption: "Electronic pulse — technology." },
+  { line: " ", music: "media/slide4-reduced.mp4", cover: "images/cover4.png", caption: "Pulse of connection — awareness." },
+  { line: " ", music: "media/slide5-reduced.mp4", cover: "images/cover5.png", caption: "Pop anthem — artistry." },
+  { line: " ", music: "media/slide6-reduced.mp4", cover: "images/cover6.png", caption: "Voice of inquiry — shards of identity." },
+  { line: "I'm James Tobin.", music: "media/slide7.mp4", caption: "Empowered closure — affirmation." }
 ];
-
-
-
 
 let idx = -1;
 
@@ -410,8 +365,7 @@ function createStars(count = 100){
 }
 
 function drawStars(){
-  // Fill the background with black
-  ctx.fillStyle = "#000";  // Ensures the background is fully black
+  ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, starCanvas.width, starCanvas.height);
 
   ctx.save();
@@ -423,8 +377,8 @@ function drawStars(){
   for (let s of stars) {
     ctx.beginPath();
     ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-    ctx.fillStyle = s.color;  // Star color based on HSL
-    ctx.globalAlpha = s.alpha;  // Star alpha (transparency)
+    ctx.fillStyle = s.color;
+    ctx.globalAlpha = s.alpha;
     ctx.fill();
 
     // Update the star's position (wrap around if it goes off the screen)
@@ -468,13 +422,40 @@ function resetToFirstSlide() {
         currentMusic.pause();
         currentMusic.currentTime = 0;
     }
+    
+       /* 🔥 FIX: Clear final slide state */
+    centerText.textContent = "";                            // remove "I'm James Tobin."
+    centerText.removeEventListener("click", resetToFirstSlide); // remove the click trigger
+    coverImage.classList.remove("cover-spin");              // (optional) ensure spin resets
 }
 
 
-function showMessage(i){
-  const m = messages[i % messages.length];
 
-// When showing a slide cover (not the final logos)
+/* -------------------- Progress Bar -------------------- */
+
+// Initialize progress bar outside of showMessage
+const progressBarContainer = document.createElement('div');
+const progressBar = document.createElement('div');
+progressBarContainer.style.position = "absolute";
+progressBarContainer.style.bottom = "10px";  
+progressBarContainer.style.left = "10px";
+progressBarContainer.style.width = "calc(100% - 20px)";  
+progressBarContainer.style.height = "8px";  
+progressBarContainer.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+progressBarContainer.style.borderRadius = "4px";
+progressBar.style.height = "100%";
+progressBar.style.backgroundColor = "#c4002f";  
+progressBar.style.width = "0%";  
+
+
+// Add progress bar to the body
+document.body.appendChild(progressBarContainer);
+progressBarContainer.appendChild(progressBar);
+
+function showMessage(i) {
+    const m = messages[i % messages.length];
+    
+    // When showing a slide cover (not the final logos)
 if (m.cover && i !== 7) {   
   coverImage.src = m.cover;
   coverImage.style.display = "block";
@@ -483,121 +464,119 @@ if (m.cover && i !== 7) {
   coverImage.style.display = "none";
   coverImage.classList.remove("cover-spin"); // stop spinning
 }
-
-
-  /* Reset UI */
-  stopStarfield();
-  james.style.display = "none";
-  coverImage.style.display = "none";
-  centerText.classList.remove("show");
-  centerText.textContent = "";
-  spinHint.classList.add("hidden");
-  barrel.classList.add("playing");
-
-  /* Play audio correctly */
-  playThroughGain(m.music);
-
-  // Hover/touch display
-function showTextCover() {
-  if (i === 7) return; // disable hover/touch on last slide
-  if (m.line){ centerText.textContent = m.line; centerText.classList.add("show"); }
-  if (m.cover){ coverImage.src = m.cover; coverImage.style.display = "block"; }
-}
-function hideTextCover() {
-  if (i === 7) return; // disable hover/touch on last slide
-  centerText.classList.remove("show");
-  coverImage.style.display = "none";
-}
-  aperture.addEventListener("mouseenter", showTextCover);
-  aperture.addEventListener("mouseleave", hideTextCover);
-  aperture.addEventListener("touchstart", showTextCover);
-  aperture.addEventListener("touchend", hideTextCover);
-
-  /* James final slide */
-  if(i === 7){
-    startStarfield(); // keep starfield behind logos
-
-    const logos = [
-      "images/blank.png",
-      "images/blank.png",
-      "images/banking.png",
-      "images/fintech.png",
-      "images/telecoms.png",
-      "images/ivr.png",
-       "images/media.png",
-     "images/+more.png",
-    ];
-
-    let l = 0;
-    coverImage.style.display = "block";
     
-
-    function showNextLogo() {
-    if (l >= logos.length) {
-      // Hide logos
-      coverImage.style.display = "none";
-      // Show James image
-      james.style.display = "block";
-      // Show the "I'm James Tobin." text
-      centerText.textContent = "I'm James Tobin.";
-      centerText.classList.add("show");
-      return;
-    }
-    coverImage.src = logos[l];
-    l++;
-    setTimeout(showNextLogo, 550);
-  }
-  showNextLogo();
-
-  } else {
-    startStarfield();
-  }
-
- currentMusic.onended = () => {
-    // If last slide, reset to first slide without auto-playing
-    if(idx === messages.length - 1){
-        resetToFirstSlide();
-        return;
-    }
-
-    // Otherwise, continue as usual
+    
+    /* Reset UI */
     stopStarfield();
     james.style.display = "none";
     coverImage.style.display = "none";
-    barrel.classList.remove("playing");
-    spinHint.classList.remove("hidden");
+    centerText.classList.remove("show");
+    centerText.textContent = "";
+    spinHint.classList.add("hidden");
+    barrel.classList.add("playing");
 
-    const hints = [
-      "Tap", "Clues? (›)","Story? (›)", "Threads (›)",
-      "Listen? (›)", "Look (›)",
-      "Shards? (›)", "Who? (›)",
-      "Tap"
-    ];
+    /* Play audio correctly */
+    playThroughGain(m.music);
 
-    // If last slide, immediately go back to first slide
-   if(idx === messages.length - 1){
-    resetToFirstSlide();   // just reset UI, don't play audio
-    return;
+    // Hover/touch display
+    function showTextCover() {
+      if (i === 7) return; 
+      if (m.line) { centerText.textContent = m.line; centerText.classList.add("show"); }
+      if (m.cover) { coverImage.src = m.cover; coverImage.style.display = "block"; }
+    }
+    function hideTextCover() {
+      if (i === 7) return; 
+      centerText.classList.remove("show");
+      coverImage.style.display = "none";
+    }
+    aperture.addEventListener("mouseenter", showTextCover);
+    aperture.addEventListener("mouseleave", hideTextCover);
+    aperture.addEventListener("touchstart", showTextCover);
+    aperture.addEventListener("touchend", hideTextCover);
+
+    /* James final slide */
+    if (i === 7) {
+      startStarfield(); 
+
+      const logos = [
+         "images/banking.png",
+        "images/fintech.png",
+        "images/banking.png",
+        "images/fintech.png",
+        "images/telecoms.png",
+        "images/ivr.png",
+        "images/media.png",
+        "images/+more.png",
+      ];
+
+      let l = 0;
+      coverImage.style.display = "block";
+
+       function showNextLogo() {
+        if (l >= logos.length) {
+          coverImage.style.display = "none";
+          james.style.display = "block";
+          centerText.textContent = "I'm James Tobin.";
+          centerText.classList.add("show");
+
+          // Add the click event listener to reset to the first slide when clicked
+          centerText.addEventListener("click", resetToFirstSlide);
+          return;
+        }
+        coverImage.src = logos[l];
+        l++;
+        setTimeout(showNextLogo, 550);
+    }
+    showNextLogo();
+} else {
+    startStarfield();
+}
+    // Update progress bar
+    const totalSlides = messages.length;
+    const progressPercentage = ((i + 1) / totalSlides) * 100;
+    progressBar.style.width = `${progressPercentage}%`;  
+
+    currentMusic.onended = () => {
+      if (idx === messages.length - 1) {
+        resetToFirstSlide();
+        return;
+      }
+
+      stopStarfield();
+      james.style.display = "none";
+      coverImage.style.display = "none";
+      barrel.classList.remove("playing");
+      spinHint.classList.remove("hidden");
+
+      const hints = [
+        "Tap", "Clues? (›)", "Story? (›)", "Threads (›)",
+        "Listen? (›)", "Look (›)",
+        "Shards? (›)", "Who? (›)",
+        " "
+      ];
+
+     // if (idx === messages.length - 1) {
+//     resetToFirstSlide();  
+//     return;
+// }
+      spinHint.textContent = hints[idx + 1] || "Tap";
+
+      aperture.removeEventListener("mouseenter", showTextCover);
+      aperture.removeEventListener("mouseleave", hideTextCover);
+      aperture.removeEventListener("touchstart", showTextCover);
+      aperture.removeEventListener("touchend", hideTextCover);
+    };
 }
 
-    spinHint.textContent = hints[idx+1] || "Tap";
-
-    aperture.removeEventListener("mouseenter", showTextCover);
-    aperture.removeEventListener("mouseleave", hideTextCover);
-    aperture.removeEventListener("touchstart", showTextCover);
-    aperture.removeEventListener("touchend", hideTextCover);
-};
-
-}
 
 /* Tap to advance */
 barrel.addEventListener("click", () => {
-  audioCtx.resume();  // required to unlock audio context
+  audioCtx.resume();  
 
   if (dragging) return;
   if (barrel.classList.contains("playing")) return;
   idx++;
-  showMessage(idx);    // <-- this will now play the MP4
+  showMessage(idx);  
 });
 
 /* -------------------- VOLUME DRAG (GainNode) -------------------- */
