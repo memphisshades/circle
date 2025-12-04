@@ -721,9 +721,19 @@ function scaleUI() {
   centerText.style.fontSize = `${Math.min(Math.max(vmin * 0.02, 14), 60)}px`;
 }
 
-// Run on load and resize
-window.addEventListener('load', scaleUI);
-window.addEventListener('resize', scaleUI);
+// ---------------------- JS-only jitter fix ----------------------
+
+// Delay initial scaling to let mobile viewport stabilize
+window.addEventListener('load', () => {
+  setTimeout(scaleUI, 50); // small 50ms delay
+});
+
+// Throttle resize events to avoid rapid size changes
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(scaleUI, 50);
+});
 </script>
 
 
