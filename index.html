@@ -684,11 +684,10 @@ window.addEventListener('load', function() {
   }, 1000);  // 5 seconds delay
 });</script>
 
-
 <script>
-
 // Quick fix: dynamically scale the interactive UI for all screen sizes, including 5K
 // Scales barrel, aperture, and text proportionally without touching existing JS
+// Adds min/max limits to work well on phones, tablets, desktops, and 5K monitors
 
 function scaleUI() {
   const barrel = document.getElementById('barrel');
@@ -699,8 +698,8 @@ function scaleUI() {
   // Use the smaller viewport dimension
   const vmin = Math.min(window.innerWidth, window.innerHeight);
 
-  // Scale barrel: 60% of vmin, max 2000px
-  const barrelSize = Math.min(vmin * 0.6, 2000);
+  // Scale barrel: 60% of vmin, min 300px, max 2000px
+  const barrelSize = Math.min(Math.max(vmin * 0.6, 300), 2000);
   barrel.style.width = `${barrelSize}px`;
   barrel.style.height = `${barrelSize}px`;
   barrel.style.position = 'absolute';
@@ -715,18 +714,16 @@ function scaleUI() {
   aperture.style.left = '50%';
   aperture.style.transform = 'translate(-50%, -50%)';
 
-  // Scale spin-hint text: 1.5% of vmin, max 50px
-  spinHint.style.fontSize = `${Math.min(vmin * 0.015, 50)}px`;
+  // Scale spin-hint text: 1.5% of vmin, min 12px, max 50px
+  spinHint.style.fontSize = `${Math.min(Math.max(vmin * 0.015, 12), 50)}px`;
 
-  // Scale center-text: 2% of vmin, max 60px
-  centerText.style.fontSize = `${Math.min(vmin * 0.02, 60)}px`;
+  // Scale center-text: 2% of vmin, min 14px, max 60px
+  centerText.style.fontSize = `${Math.min(Math.max(vmin * 0.02, 14), 60)}px`;
 }
 
 // Run on load and resize
 window.addEventListener('load', scaleUI);
 window.addEventListener('resize', scaleUI);
-
-  
 </script>
 
 
