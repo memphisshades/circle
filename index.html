@@ -670,19 +670,16 @@ window.addEventListener("orientationchange", centerBarrel);
 <script>
 window.addEventListener('load', function() {
   // Hide the page content initially
-  document.body.style.visibility = 'hidden';
   document.body.style.opacity = '0'; // Set initial opacity to 0 (fully transparent)
 
   // Set a delay of 5 seconds (5000 milliseconds)
   setTimeout(function() {
-    // Make the page content visible after the delay
-    document.body.style.visibility = 'visible';
-    
     // Apply fade-in effect (opacity transition)
     document.body.style.transition = 'opacity 2s ease-out';  // 2 seconds fade-in
     document.body.style.opacity = '1';  // Fade in by changing opacity to 1
-  }, 1000);  // 5 seconds delay
-});</script>
+  }, 1000);  // 1-second delay
+});
+</script>
 
 <script>
 // Quick fix (not!): dynamically scale the interactive UI for all screen sizes, including 5K
