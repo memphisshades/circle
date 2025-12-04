@@ -695,6 +695,12 @@ function scaleUI() {
   const spinHint = document.getElementById('spinHint');
   const centerText = document.getElementById('centerText');
 
+
+  // Hide them initially
+[barrel, aperture, spinHint, centerText].forEach(el => {
+  el.style.display = 'none';
+});
+  
   // Use the smaller viewport dimension
   const vmin = Math.min(window.innerWidth, window.innerHeight);
 
@@ -719,6 +725,11 @@ function scaleUI() {
 
   // Scale center-text: 2% of vmin, min 14px, max 60px
   centerText.style.fontSize = `${Math.min(Math.max(vmin * 0.02, 14), 60)}px`;
+
+  // Show elements after scaling
+  [barrel, aperture, spinHint, centerText].forEach(el => {
+    el.style.display = '';
+  });
 }
 
 // ---------------------- JS-only jitter fix ----------------------
