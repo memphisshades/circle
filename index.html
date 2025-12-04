@@ -671,8 +671,11 @@ window.addEventListener("orientationchange", centerBarrel);
 </script>
 <script>
 window.addEventListener('load', function() {
+  // Apply dark background immediately to prevent flashes of unstyled content
+  document.body.style.backgroundColor = 'rgba(0, 0, 0, 1)'; // Dark background
+
   // Hide the page content initially
-  document.body.style.visibility = 'hidden'; // Hide content initially, but it participates in layout
+  document.body.style.visibility = 'hidden'; // Hide content initially but keep in layout
   document.body.style.opacity = '0'; // Make sure it's not visible initially
   
   // Set a delay for applying the fade-in after the scaling is applied
@@ -680,12 +683,11 @@ window.addEventListener('load', function() {
     // Apply scaling first
     scaleUI();
 
-    // Now fade in by changing opacity to 1 after scaling is complete
-    document.body.style.transition = 'opacity 2s ease-out';  // 2 seconds fade-in transition
+    // Fade in after scaling
+    document.body.style.transition = 'opacity 1s ease-out';  // Fast fade-in transition
     document.body.style.visibility = 'visible';  // Make content visible
     document.body.style.opacity = '1';  // Fade in content
-    
-  }, 1000);  // Delay of 1 second before starting the fade-in
+  }, 500);  // Delay for 500ms before starting fade-in
 });
 </script>
 
@@ -708,7 +710,7 @@ function scaleUI() {
   barrel.style.top = `${(window.innerHeight - barrelSize) / 2}px`;
   barrel.style.left = `${(window.innerWidth - barrelSize) / 2}px`;
 
-  // Scale aperture: 60% of barrel
+  // Scale aperture: 60% of barrel size
   const apertureSize = barrelSize * 0.6;
   aperture.style.width = `${apertureSize}px`;
   aperture.style.height = `${apertureSize}px`;
@@ -728,7 +730,7 @@ function scaleUI() {
   });
 }
 
-// Create scaling overlay
+// Create scaling overlay to show during scaling process
 function createScalingOverlay() {
   const overlay = document.createElement('div');
   overlay.id = 'scalingOverlay';
@@ -737,7 +739,7 @@ function createScalingOverlay() {
   overlay.style.left = '0';
   overlay.style.width = '100%';
   overlay.style.height = '100%';
-  overlay.style.backgroundColor = 'rgba(0,0,0,0.8)'; // dark overlay
+  overlay.style.backgroundColor = 'rgba(0,0,0,0.8)'; // Dark overlay
   overlay.style.color = '#fff';
   overlay.style.display = 'flex';
   overlay.style.alignItems = 'center';
@@ -759,12 +761,12 @@ function createScalingOverlay() {
 
 // Function to detect "mobile" viewport
 function isMobileViewport() {
-  return window.innerWidth <= 768; // simple mobile breakpoint
+  return window.innerWidth <= 768; // Simple mobile breakpoint
 }
 
 // Run scaleUI on load with overlay
 window.addEventListener('load', () => {
-  // Start scaling immediately to avoid "flash" on initial load
+  // Start scaling immediately to avoid flash of unstyled content
   scaleUI();
 
   const overlay = createScalingOverlay();
@@ -775,9 +777,9 @@ window.addEventListener('load', () => {
 
   // Run scaling logic immediately after load
   if (isMobileViewport()) {
-    setTimeout(runScaling, 50); // delay for mobile viewport stabilization
+    setTimeout(runScaling, 50); // Delay for mobile viewport stabilization
   } else {
-    runScaling(); // desktop: run immediately
+    runScaling(); // Desktop: run immediately
   }
 
   // Optional: run once more after a short timeout to ensure final layout
@@ -791,18 +793,10 @@ window.addEventListener('resize', () => {
   resizeTimeout = setTimeout(scaleUI, 50);
 });
 
-// -----------------------------------------------------------
-// BEGIN: iPad/iPhone Orientation Rotation Fix (SAFE TO REMOVE)
-// -----------------------------------------------------------
-// Safari gives incorrect viewport sizes for ~100ms after rotation.
-// This waits a bit before re-scaling the UI to avoid wrong layout.
+// Orientation change fix for mobile
 window.addEventListener('orientationchange', () => {
   setTimeout(scaleUI, 150);
 });
-//
-// ---------------------------
-// END: Orientation Fix Block
-// ---------------------------
 </script>
 
 
