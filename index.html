@@ -688,7 +688,7 @@ window.addEventListener('load', function() {
 // Quick fix (not!): dynamically scale the interactive UI for all screen sizes, including 5K
 // Scales barrel, aperture, and text proportionally without touching existing JS
 // Adds min/max limits to work well on phones, tablets, desktops, and 5K monitors
-  //Needs rework! 
+// Needs rework!
 
 function scaleUI() {
   const barrel = document.getElementById('barrel');
@@ -696,12 +696,11 @@ function scaleUI() {
   const spinHint = document.getElementById('spinHint');
   const centerText = document.getElementById('centerText');
 
-
   // Hide them initially
-[barrel, aperture, spinHint, centerText].forEach(el => {
-  el.style.display = 'none';
-});
-  
+  [barrel, aperture, spinHint, centerText].forEach(el => {
+    el.style.display = 'none';
+  });
+
   // Use the smaller viewport dimension
   const vmin = Math.min(window.innerWidth, window.innerHeight);
 
@@ -733,6 +732,29 @@ function scaleUI() {
   });
 }
 
+// ---------------------- Overlay for scaling ----------------------
+
+// Create scaling overlay
+function createScalingOverlay() {
+  const overlay = document.createElement('div');
+  overlay.id = 'scalingOverlay';
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.backgroundColor = 'rgba(0,0,0,0.8)'; // dark overlay
+  overlay.style.color = '#fff';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.fontSize = '2rem';
+  overlay.style.zIndex = '9999';
+  overlay.textContent = 'Scaling...';
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
 // ---------------------- JS-only jitter fix ----------------------
 
 // Function to detect "mobile" viewport
@@ -740,16 +762,24 @@ function isMobileViewport() {
   return window.innerWidth <= 768; // simple mobile breakpoint
 }
 
-// Run scaleUI on load with delay for mobile, immediate for desktop
+// Run scaleUI on load with overlay
 window.addEventListener('load', () => {
+  const overlay = createScalingOverlay();
+
+  const runScaling = () => {
+    scaleUI();
+    // Remove overlay after scaling
+    setTimeout(() => overlay.remove(), 50);
+  };
+
   if (isMobileViewport()) {
-    setTimeout(scaleUI, 50); // small delay for mobile viewport stabilization
+    setTimeout(runScaling, 50); // delay for mobile viewport stabilization
   } else {
-    scaleUI(); // desktop: run immediately
+    runScaling(); // desktop: run immediately
   }
 
   // Optional: run once more after a short timeout to ensure final layout
-  setTimeout(scaleUI, 100);
+  setTimeout(runScaling, 100);
 });
 
 // Throttle resize events to avoid rapid size changes
@@ -759,6 +789,7 @@ window.addEventListener('resize', () => {
   resizeTimeout = setTimeout(scaleUI, 50);
 });
 </script>
+
 
 
 
