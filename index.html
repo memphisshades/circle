@@ -669,134 +669,134 @@ window.addEventListener("orientationchange", centerBarrel);
 // });
 */
 </script>
-<script>
-window.addEventListener('load', function() {
-  // Apply dark background immediately to prevent flashes of unstyled content
-  document.body.style.backgroundColor = 'rgba(0, 0, 0, 1)'; // Dark background
+<style>
+  /* Initially hide body content, apply dark background */
+  body {
+    opacity: 0; /* Hide content initially */
+    visibility: hidden; /* Hide from layout */
+    background-color: rgba(0, 0, 0, 1); /* Dark background */
+    transition: opacity 1s ease-out; /* Smooth fade-in */
+  }
+</style>
 
-  // Hide the page content initially
-  document.body.style.visibility = 'hidden'; // Hide content initially but keep in layout
-  document.body.style.opacity = '0'; // Make sure it's not visible initially
-  
-  // Set a delay for applying the fade-in after the scaling is applied
-  setTimeout(function() {
-    // Apply scaling first
+<script>
+  window.addEventListener('load', function () {
+    // Now, apply scaling and show the page content
     scaleUI();
 
-    // Fade in after scaling
-    document.body.style.transition = 'opacity 1s ease-out';  // Fast fade-in transition
-    document.body.style.visibility = 'visible';  // Make content visible
-    document.body.style.opacity = '1';  // Fade in content
-  }, 500);  // Delay for 500ms before starting fade-in
-});
-</script>
-
-<script>
-// Function to dynamically scale the interactive UI for all screen sizes
-function scaleUI() {
-  const barrel = document.getElementById('barrel');
-  const aperture = document.getElementById('aperture');
-  const spinHint = document.getElementById('spinHint');
-  const centerText = document.getElementById('centerText');
-
-  // Use the smaller viewport dimension
-  const vmin = Math.min(window.innerWidth, window.innerHeight);
-
-  // Scale barrel: 60% of vmin, min 300px, max 2000px
-  const barrelSize = Math.min(Math.max(vmin * 0.6, 300), 2000);
-  barrel.style.width = `${barrelSize}px`;
-  barrel.style.height = `${barrelSize}px`;
-  barrel.style.position = 'absolute';
-  barrel.style.top = `${(window.innerHeight - barrelSize) / 2}px`;
-  barrel.style.left = `${(window.innerWidth - barrelSize) / 2}px`;
-
-  // Scale aperture: 60% of barrel size
-  const apertureSize = barrelSize * 0.6;
-  aperture.style.width = `${apertureSize}px`;
-  aperture.style.height = `${apertureSize}px`;
-  aperture.style.top = '50%';
-  aperture.style.left = '50%';
-  aperture.style.transform = 'translate(-50%, -50%)';
-
-  // Scale spin-hint text: 1.5% of vmin, min 12px, max 50px
-  spinHint.style.fontSize = `${Math.min(Math.max(vmin * 0.015, 12), 50)}px`;
-
-  // Scale center-text: 2% of vmin, min 14px, max 60px
-  centerText.style.fontSize = `${Math.min(Math.max(vmin * 0.02, 14), 60)}px`;
-
-  // Ensure elements are visible after scaling is applied
-  [barrel, aperture, spinHint, centerText].forEach(el => {
-    el.style.opacity = '1'; // Ensure they are visible
+    // Once scaling is done, fade-in the content
+    setTimeout(function () {
+      // Show content
+      document.body.style.visibility = 'visible';  // Make content visible
+      document.body.style.opacity = '1';  // Fade in content
+    }, 500);  // Delay to ensure scaling logic is applied first
   });
-}
 
-// Create scaling overlay to show during scaling process
-function createScalingOverlay() {
-  const overlay = document.createElement('div');
-  overlay.id = 'scalingOverlay';
-  overlay.style.position = 'fixed';
-  overlay.style.top = '0';
-  overlay.style.left = '0';
-  overlay.style.width = '100%';
-  overlay.style.height = '100%';
-  overlay.style.backgroundColor = 'rgba(0,0,0,0.8)'; // Dark overlay
-  overlay.style.color = '#fff';
-  overlay.style.display = 'flex';
-  overlay.style.alignItems = 'center';
-  overlay.style.justifyContent = 'center';
-  overlay.style.fontSize = '2rem';
-  overlay.style.zIndex = '9999';
-  overlay.textContent = 'Scaling...';
-  document.body.appendChild(overlay);
+  // Function to dynamically scale the interactive UI for all screen sizes
+  function scaleUI() {
+    const barrel = document.getElementById('barrel');
+    const aperture = document.getElementById('aperture');
+    const spinHint = document.getElementById('spinHint');
+    const centerText = document.getElementById('centerText');
 
-  // Fade-out the overlay after scaling
-  setTimeout(() => {
-    overlay.style.transition = 'opacity 0.5s ease-out';
-    overlay.style.opacity = '0';
-    setTimeout(() => overlay.remove(), 500);  // Remove after fade-out
-  }, 500);
+    // Use the smaller viewport dimension
+    const vmin = Math.min(window.innerWidth, window.innerHeight);
 
-  return overlay;
-}
+    // Scale barrel: 60% of vmin, min 300px, max 2000px
+    const barrelSize = Math.min(Math.max(vmin * 0.6, 300), 2000);
+    barrel.style.width = `${barrelSize}px`;
+    barrel.style.height = `${barrelSize}px`;
+    barrel.style.position = 'absolute';
+    barrel.style.top = `${(window.innerHeight - barrelSize) / 2}px`;
+    barrel.style.left = `${(window.innerWidth - barrelSize) / 2}px`;
 
-// Function to detect "mobile" viewport
-function isMobileViewport() {
-  return window.innerWidth <= 768; // Simple mobile breakpoint
-}
+    // Scale aperture: 60% of barrel size
+    const apertureSize = barrelSize * 0.6;
+    aperture.style.width = `${apertureSize}px`;
+    aperture.style.height = `${apertureSize}px`;
+    aperture.style.top = '50%';
+    aperture.style.left = '50%';
+    aperture.style.transform = 'translate(-50%, -50%)';
 
-// Run scaleUI on load with overlay
-window.addEventListener('load', () => {
-  // Start scaling immediately to avoid flash of unstyled content
-  scaleUI();
+    // Scale spin-hint text: 1.5% of vmin, min 12px, max 50px
+    spinHint.style.fontSize = `${Math.min(Math.max(vmin * 0.015, 12), 50)}px`;
 
-  const overlay = createScalingOverlay();
+    // Scale center-text: 2% of vmin, min 14px, max 60px
+    centerText.style.fontSize = `${Math.min(Math.max(vmin * 0.02, 14), 60)}px`;
 
-  const runScaling = () => {
-    scaleUI();
-  };
-
-  // Run scaling logic immediately after load
-  if (isMobileViewport()) {
-    setTimeout(runScaling, 50); // Delay for mobile viewport stabilization
-  } else {
-    runScaling(); // Desktop: run immediately
+    // Ensure elements are visible after scaling is applied
+    [barrel, aperture, spinHint, centerText].forEach(el => {
+      el.style.opacity = '1'; // Ensure they are visible
+    });
   }
 
-  // Optional: run once more after a short timeout to ensure final layout
-  setTimeout(runScaling, 100);
-});
+  // Create scaling overlay to show during scaling process
+  function createScalingOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'scalingOverlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.8)'; // Dark overlay
+    overlay.style.color = '#fff';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.fontSize = '2rem';
+    overlay.style.zIndex = '9999';
+    overlay.textContent = 'Scaling...';
+    document.body.appendChild(overlay);
 
-// Throttle resize events to avoid rapid size changes
-let resizeTimeout;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(scaleUI, 50);
-});
+    // Fade-out the overlay after scaling
+    setTimeout(() => {
+      overlay.style.transition = 'opacity 0.5s ease-out';
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 500);  // Remove after fade-out
+    }, 500);
 
-// Orientation change fix for mobile
-window.addEventListener('orientationchange', () => {
-  setTimeout(scaleUI, 150);
-});
+    return overlay;
+  }
+
+  // Function to detect "mobile" viewport
+  function isMobileViewport() {
+    return window.innerWidth <= 768; // Simple mobile breakpoint
+  }
+
+  // Run scaleUI on load with overlay
+  window.addEventListener('load', () => {
+    // Start scaling immediately to avoid flash of unstyled content
+    scaleUI();
+
+    const overlay = createScalingOverlay();
+
+    const runScaling = () => {
+      scaleUI();
+    };
+
+    // Run scaling logic immediately after load
+    if (isMobileViewport()) {
+      setTimeout(runScaling, 50); // Delay for mobile viewport stabilization
+    } else {
+      runScaling(); // Desktop: run immediately
+    }
+
+    // Optional: run once more after a short timeout to ensure final layout
+    setTimeout(runScaling, 100);
+  });
+
+  // Throttle resize events to avoid rapid size changes
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(scaleUI, 50);
+  });
+
+  // Orientation change fix for mobile
+  window.addEventListener('orientationchange', () => {
+    setTimeout(scaleUI, 150);
+  });
 </script>
 
 
