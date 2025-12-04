@@ -82,6 +82,8 @@ html, body {
   margin: 0;
   background: var(--bg);
   overflow: hidden;
+  opacity: 0; /* Hide initially */
+    transition: opacity 2s ease-out; /* Smooth fade-in effect */
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   color: var(--text);
 }
@@ -666,25 +668,28 @@ window.addEventListener("orientationchange", centerBarrel);
 // });
 */
 </script>
-
 <script>
 window.addEventListener('load', function() {
   // Hide the page content initially
-  document.body.style.opacity = '0'; // Set initial opacity to 0 (fully transparent)
-
-  // Set a delay of 5 seconds (5000 milliseconds)
+  document.body.style.visibility = 'hidden'; // Hide content initially, but it participates in layout
+  document.body.style.opacity = '0'; // Make sure it's not visible initially
+  
+  // Set a delay for applying the fade-in after the scaling is applied
   setTimeout(function() {
-    // Apply fade-in effect (opacity transition)
-    document.body.style.transition = 'opacity 2s ease-out';  // 2 seconds fade-in
-    document.body.style.opacity = '1';  // Fade in by changing opacity to 1
-  }, 1000);  // 1-second delay
+    // Apply scaling first
+    scaleUI();
+
+    // Now fade in by changing opacity to 1 after scaling is complete
+    document.body.style.transition = 'opacity 2s ease-out';  // 2 seconds fade-in transition
+    document.body.style.visibility = 'visible';  // Make content visible
+    document.body.style.opacity = '1';  // Fade in content
+    
+  }, 1000);  // Delay of 1 second before starting the fade-in
 });
 </script>
 
 <script>
 // Function to dynamically scale the interactive UI for all screen sizes
-// Scales barrel, aperture, and text proportionally
-// Adds min/max limits to work well on phones, tablets, desktops, and 5K monitors
 function scaleUI() {
   const barrel = document.getElementById('barrel');
   const aperture = document.getElementById('aperture');
@@ -722,8 +727,6 @@ function scaleUI() {
   });
 }
 
-// ---------------------- Overlay for scaling ----------------------
-
 // Create scaling overlay
 function createScalingOverlay() {
   const overlay = document.createElement('div');
@@ -752,8 +755,6 @@ function createScalingOverlay() {
 
   return overlay;
 }
-
-// ---------------------- JS-only jitter fix ----------------------
 
 // Function to detect "mobile" viewport
 function isMobileViewport() {
@@ -801,8 +802,8 @@ window.addEventListener('orientationchange', () => {
 // ---------------------------
 // END: Orientation Fix Block
 // ---------------------------
-
 </script>
+
 
 
 
