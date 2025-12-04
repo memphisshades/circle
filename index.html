@@ -723,9 +723,21 @@ function scaleUI() {
 
 // ---------------------- JS-only jitter fix ----------------------
 
-// Delay initial scaling to let mobile viewport stabilize
+// Function to detect "mobile" viewport
+function isMobileViewport() {
+  return window.innerWidth <= 768; // simple mobile breakpoint
+}
+
+// Run scaleUI on load with delay for mobile, immediate for desktop
 window.addEventListener('load', () => {
-  setTimeout(scaleUI, 50); // small 50ms delay
+  if (isMobileViewport()) {
+    setTimeout(scaleUI, 50); // small delay for mobile viewport stabilization
+  } else {
+    scaleUI(); // desktop: run immediately
+  }
+
+  // Optional: run once more after a short timeout to ensure final layout
+  setTimeout(scaleUI, 100);
 });
 
 // Throttle resize events to avoid rapid size changes
