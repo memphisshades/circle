@@ -687,39 +687,45 @@ window.addEventListener('load', function() {
 
 <script>
 
-// Quick fix: dynamically scale the barrel and aperture for large screens (e.g., 5K)
-// This ensures the interactive element is visually impactful without touching existing JS
+// Quick fix: dynamically scale the interactive UI for all screen sizes, including 5K
+// Scales barrel, aperture, and text proportionally without touching existing JS
 
-function scaleBarrel() {
+function scaleUI() {
   const barrel = document.getElementById('barrel');
   const aperture = document.getElementById('aperture');
+  const spinHint = document.getElementById('spinHint');
+  const centerText = document.getElementById('centerText');
 
-  // Calculate 60% of smaller viewport dimension, max 2000px
+  // Use the smaller viewport dimension
   const vmin = Math.min(window.innerWidth, window.innerHeight);
-  const size = Math.min(vmin * 0.6, 2000);
 
-  // Set barrel size
-  barrel.style.width = `${size}px`;
-  barrel.style.height = `${size}px`;
-
-  // Center the barrel
+  // Scale barrel: 60% of vmin, max 2000px
+  const barrelSize = Math.min(vmin * 0.6, 2000);
+  barrel.style.width = `${barrelSize}px`;
+  barrel.style.height = `${barrelSize}px`;
   barrel.style.position = 'absolute';
-  barrel.style.top = `${(window.innerHeight - size) / 2}px`;
-  barrel.style.left = `${(window.innerWidth - size) / 2}px`;
+  barrel.style.top = `${(window.innerHeight - barrelSize) / 2}px`;
+  barrel.style.left = `${(window.innerWidth - barrelSize) / 2}px`;
 
-  // Scale aperture proportionally (currently 60% of barrel)
-  aperture.style.width = `${size * 0.6}px`;
-  aperture.style.height = `${size * 0.6}px`;
-
-  // Center aperture inside barrel
+  // Scale aperture: 60% of barrel
+  const apertureSize = barrelSize * 0.6;
+  aperture.style.width = `${apertureSize}px`;
+  aperture.style.height = `${apertureSize}px`;
   aperture.style.top = '50%';
   aperture.style.left = '50%';
   aperture.style.transform = 'translate(-50%, -50%)';
+
+  // Scale spin-hint text: 1.5% of vmin, max 50px
+  spinHint.style.fontSize = `${Math.min(vmin * 0.015, 50)}px`;
+
+  // Scale center-text: 2% of vmin, max 60px
+  centerText.style.fontSize = `${Math.min(vmin * 0.02, 60)}px`;
 }
 
 // Run on load and resize
-window.addEventListener('load', scaleBarrel);
-window.addEventListener('resize', scaleBarrel);
+window.addEventListener('load', scaleUI);
+window.addEventListener('resize', scaleUI);
+
   
 </script>
 
