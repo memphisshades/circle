@@ -662,6 +662,8 @@ window.addEventListener("orientationchange", centerBarrel);
   }
 </style>
 
+
+  <!-- 
 <script>
   window.addEventListener('load', function () {
     // Now, apply scaling and show the page content
@@ -779,6 +781,67 @@ window.addEventListener("orientationchange", centerBarrel);
   // Orientation change fix for mobile
   window.addEventListener('orientationchange', () => {
     setTimeout(scaleUI, 150);
+  });
+</script>
+
+-->
+
+  
+<script>
+  function scaleUI() {
+    const barrel = document.getElementById('barrel');
+    const aperture = document.getElementById('aperture');
+    const spinHint = document.getElementById('spinHint');
+    const centerText = document.getElementById('centerText');
+
+    const vmin = Math.min(window.innerWidth, window.innerHeight);
+
+    // Barrel size & center
+    const barrelSize = Math.min(Math.max(vmin * 0.6, 300), 2000);
+    barrel.style.width = `${barrelSize}px`;
+    barrel.style.height = `${barrelSize}px`;
+    barrel.style.position = 'absolute';
+    barrel.style.top = `${(window.innerHeight - barrelSize) / 2}px`;
+    barrel.style.left = `${(window.innerWidth - barrelSize) / 2}px`;
+
+    // Aperture size
+    const apertureSize = barrelSize * 0.6;
+    aperture.style.width = `${apertureSize}px`;
+    aperture.style.height = `${apertureSize}px`;
+    aperture.style.top = '50%';
+    aperture.style.left = '50%';
+    aperture.style.transform = 'translate(-50%, -50%)';
+
+    // Text sizes
+    spinHint.style.fontSize = `${Math.min(Math.max(vmin * 0.015, 12), 50)}px`;
+    centerText.style.fontSize = `${Math.min(Math.max(vmin * 0.02, 14), 60)}px`;
+
+    // Force repaint for iOS
+    barrel.offsetHeight;
+  }
+
+  // Debounced handler for resizing
+  let resizeTimeout;
+  function handleResize() {
+    cancelAnimationFrame(resizeTimeout);
+    resizeTimeout = requestAnimationFrame(() => {
+      scaleUI();
+    });
+  }
+
+  // Initial load
+  window.addEventListener('load', () => {
+    scaleUI();
+    // Fade in
+    document.body.style.visibility = 'visible';
+    document.body.style.opacity = '1';
+  });
+
+  // Listen for resize & orientation change
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('orientationchange', () => {
+    // Wait one frame to ensure viewport updates
+    requestAnimationFrame(scaleUI);
   });
 </script>
 
