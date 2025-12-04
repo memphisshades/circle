@@ -685,7 +685,43 @@ window.addEventListener('load', function() {
 });</script>
 
 
+<script>
 
+// Quick fix: dynamically scale the barrel and aperture for large screens (e.g., 5K)
+// This ensures the interactive element is visually impactful without touching existing JS
+
+function scaleBarrel() {
+  const barrel = document.getElementById('barrel');
+  const aperture = document.getElementById('aperture');
+
+  // Calculate 60% of smaller viewport dimension, max 2000px
+  const vmin = Math.min(window.innerWidth, window.innerHeight);
+  const size = Math.min(vmin * 0.6, 2000);
+
+  // Set barrel size
+  barrel.style.width = `${size}px`;
+  barrel.style.height = `${size}px`;
+
+  // Center the barrel
+  barrel.style.position = 'absolute';
+  barrel.style.top = `${(window.innerHeight - size) / 2}px`;
+  barrel.style.left = `${(window.innerWidth - size) / 2}px`;
+
+  // Scale aperture proportionally (currently 60% of barrel)
+  aperture.style.width = `${size * 0.6}px`;
+  aperture.style.height = `${size * 0.6}px`;
+
+  // Center aperture inside barrel
+  aperture.style.top = '50%';
+  aperture.style.left = '50%';
+  aperture.style.transform = 'translate(-50%, -50%)';
+}
+
+// Run on load and resize
+window.addEventListener('load', scaleBarrel);
+window.addEventListener('resize', scaleBarrel);
+  
+</script>
 
 
 
