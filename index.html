@@ -685,9 +685,10 @@ window.addEventListener('load', function() {
 });</script>
 
 <script>
-// Quick fix: dynamically scale the interactive UI for all screen sizes, including 5K
+// Quick fix (not!): dynamically scale the interactive UI for all screen sizes, including 5K
 // Scales barrel, aperture, and text proportionally without touching existing JS
 // Adds min/max limits to work well on phones, tablets, desktops, and 5K monitors
+  //Needs rework! 
 
 function scaleUI() {
   const barrel = document.getElementById('barrel');
