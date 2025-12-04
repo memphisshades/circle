@@ -693,11 +693,6 @@ function scaleUI() {
   const spinHint = document.getElementById('spinHint');
   const centerText = document.getElementById('centerText');
 
-  // Hide them initially
-  [barrel, aperture, spinHint, centerText].forEach(el => {
-    el.style.display = 'none';
-  });
-
   // Use the smaller viewport dimension
   const vmin = Math.min(window.innerWidth, window.innerHeight);
 
@@ -725,13 +720,13 @@ function scaleUI() {
 
   // Show elements after scaling
   [barrel, aperture, spinHint, centerText].forEach(el => {
-    el.style.display = '';
+    el.style.display = '';  // Just update the size without hiding elements
   });
 }
 
 // ---------------------- Overlay for scaling ----------------------
 
-// Create scaling overlay
+// Create scaling overlay with fade-out
 function createScalingOverlay() {
   const overlay = document.createElement('div');
   overlay.id = 'scalingOverlay';
@@ -749,6 +744,14 @@ function createScalingOverlay() {
   overlay.style.zIndex = '9999';
   overlay.textContent = 'Scaling...';
   document.body.appendChild(overlay);
+
+  // Fade-out the overlay after scaling
+  setTimeout(() => {
+    overlay.style.transition = 'opacity 0.5s ease-out';
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 500);  // Remove after fade-out
+  }, 500);
+
   return overlay;
 }
 
@@ -765,8 +768,6 @@ window.addEventListener('load', () => {
 
   const runScaling = () => {
     scaleUI();
-    // Remove overlay after scaling
-    setTimeout(() => overlay.remove(), 50);
   };
 
   if (isMobileViewport()) {
@@ -786,24 +787,19 @@ window.addEventListener('resize', () => {
   resizeTimeout = setTimeout(scaleUI, 50);
 });
 
-  // -----------------------------------------------------------
+// -----------------------------------------------------------
 // BEGIN: iPad/iPhone Orientation Rotation Fix (SAFE TO REMOVE)
 // -----------------------------------------------------------
-//
 // Safari gives incorrect viewport sizes for ~100ms after rotation.
 // This waits a bit before re-scaling the UI to avoid wrong layout.
-//
-
 window.addEventListener('orientationchange', () => {
   setTimeout(scaleUI, 150);
 });
-
 //
 // ---------------------------
 // END: Orientation Fix Block
 // ---------------------------
 
-  
 </script>
 
 
