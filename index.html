@@ -342,6 +342,9 @@ const volumeIndicator = document.getElementById("volumeIndicator");
 let stars = [];
 let dragging = false;
 
+// Flag to track first click hint
+let firstClickHintShown = false;
+
 /* Resize canvas */
 function resizeCanvas() {
   const visible = starCanvas.style.display === "block";
@@ -573,12 +576,33 @@ if (m.cover && i !== 8) {
 }
 
 
-/* Tap to advance */
+
 barrel.addEventListener("click", () => {
   audioCtx.resume();  
 
   if (dragging) return;
   if (barrel.classList.contains("playing")) return;
+
+ if (!firstClickHintShown) {
+  firstClickHintShown = true;
+
+  // Show first-click hint in the original spinHint element
+  spinHint.textContent = "Play Audio? (›)";
+  spinHint.classList.remove("hidden");
+
+  // Optional: add a click listener to start
+  spinHint.onclick = () => {
+    spinHint.classList.add("hidden");
+    idx = 0;
+    showMessage(idx);
+  };
+
+  return; // stop further barrel click processing
+
+ // Stop barrel click here for the first tap
+  }
+
+  // Normal tap logic
   idx++;
   showMessage(idx);  
 });
@@ -851,7 +875,7 @@ window.addEventListener("orientationchange", centerBarrel);
     and only play the video/audio if the user acknowledges.
 -->
 
-  <script>
+ <!-- <script>
 let firstClickHandled = false;
 
 document.addEventListener('click', function(event) {
@@ -872,6 +896,8 @@ document.addEventListener('click', function(event) {
     }
 }, true); // use capture mode to intercept BEFORE other handlers
 </script>
+
+-->
 
 
 
