@@ -845,6 +845,33 @@ window.addEventListener("orientationchange", centerBarrel);
   });
 </script>
 
+<!-- 
+    Script to intercept the first click on the page,
+    show a confirmation alert about audio, 
+    and only play the video/audio if the user acknowledges.
+-->
+
+  <script>
+let firstClickHandled = false;
+
+document.addEventListener('click', function(event) {
+    // Only intercept the VERY FIRST click
+    if (!firstClickHandled) {
+        event.stopImmediatePropagation();  // stop other click handlers
+        event.preventDefault();            // stop default behavior
+
+        let userAcknowledged = confirm("Heads up: audio’s part of this experience");
+
+        if (userAcknowledged) {
+            firstClickHandled = true;
+
+            // Manually trigger the original click again
+            event.target.click();
+        }
+        // If Cancel, do nothing – they stay on the same screen
+    }
+}, true); // use capture mode to intercept BEFORE other handlers
+</script>
 
 
 
