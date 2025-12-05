@@ -501,42 +501,51 @@ if (m.cover && i !== 8) {
     aperture.addEventListener("touchstart", showTextCover);
     aperture.addEventListener("touchend", hideTextCover);
 
-    /* James final slide */
-    if (i === 8) {
-      startStarfield(); 
+ /* James final slide */
+if (i === 8) {
+  // No call to startStarfield() here
 
-      const logos = [
-         "images/banking.png",
-        "images/fintech.png",
-        "images/banking.png",
-        "images/fintech.png",
-        "images/telecoms.png",
-        "images/ivr.png",
-        "images/media.png",
-        "images/+more.png",
-      ];
+  const logos = [
+    // Add your logos (image URLs) here
+  ];
 
-      let l = 0;
-      coverImage.style.display = "block";
+  let l = 0;
+  coverImage.style.display = "block";  // Show the cover image initially
 
-       function showNextLogo() {
-        if (l >= logos.length) {
-          coverImage.style.display = "none";
-          james.style.display = "block";
-          centerText.textContent = "I'm James Tobin.";
-          centerText.classList.add("show");
+  // Function to show the next logo
+  function showNextLogo() {
+    if (l >= logos.length) {
+      // Hide the image after all logos are shown
+      coverImage.style.display = "none";
 
-          // Add the click event listener to reset to the first slide when clicked
-          centerText.addEventListener("click", resetToFirstSlide);
-          return;
-        }
-        coverImage.src = logos[l];
-        l++;
-        setTimeout(showNextLogo, 550);
+      // Make 'james' visible first
+      james.style.display = "block";
+
+      // Delay setting the text content after 2 seconds
+      setTimeout(() => {
+        centerText.textContent = "I'm James Tobin.";  // Set the text content
+        centerText.classList.add("show");  // Trigger fade-in effect
+      }, 2000);  // Delay the text for 2 seconds after the image is hidden
+
+      // Add the click event listener to reset to the first slide when clicked
+      centerText.addEventListener("click", resetToFirstSlide);
+      return;
     }
-    showNextLogo();
+
+    // Show the next image
+    coverImage.src = logos[l];
+    l++;
+
+    // Transition to the next logo after a short delay
+    setTimeout(showNextLogo, 550);  // Adjust the delay between images if necessary
+  }
+
+  // Start showing the first image
+  showNextLogo();
+
 } else {
-    startStarfield();
+  // Handle starfield or other elements if needed
+  startStarfield();
 }
     // Update progress bar
     const totalSlides = messages.length;
