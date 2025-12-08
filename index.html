@@ -272,31 +272,61 @@ canvas#starfield {
 </div>
 <script>
 /* -------------------- AUDIO ENGINE (GainNode) -------------------- */
+/* 
+  This section handles playing audio tracks for each slide through a GainNode 
+  for volume control. 
+
+  Previously, creating a new Audio object and MediaElementSourceNode for each slide 
+  without fully cleaning up the previous ones could accumulate memory and crash Chrome, 
+  especially on mobile or with many slides.
+
+  This fix ensures that before playing a new track:
+    1. The previous Audio object is paused, its src cleared, and it is reset via load().
+    2. The previous MediaElementSourceNode is disconnected from the AudioContext.
+    3. Only one audio track is active at a time.
+    4. Memory is properly released to prevent browser crashes.
+
+  The code below creates a new Audio object, connects it through the GainNode, 
+  and starts playback safely.
+*/
+
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const gainNode = audioCtx.createGain();
-gainNode.gain.value = 0.25;
-gainNode.connect(audioCtx.destination);
+gainNode.gain.value = 0.25;           // Set initial volume (25%)
+gainNode.connect(audioCtx.destination); // Connect gain node to speakers
 
-let currentMusic = null;
-let currentSourceNode = null;
+let currentMusic = null;        // Holds the currently playing Audio object
+let currentSourceNode = null;   // Holds the current MediaElementSourceNode
 
 /* Play audio through gain node */
 function playThroughGain(src) {
-  if (currentMusic) currentMusic.pause();
-  if (currentSourceNode) {
-    try { currentSourceNode.disconnect(); } catch(e) {}
+  // -------------------- CLEANUP PREVIOUS AUDIO --------------------
+  if (currentMusic) {
+    currentMusic.pause();       // Stop playback of previous audio
+    currentMusic.src = "";      // Release memory by clearing source
+    currentMusic.load();        // Fully reset the audio element
+    currentMusic = null;        // Remove reference to allow garbage collection
   }
 
-  const audio = new Audio(src);
-  audio.crossOrigin = "anonymous";
+  if (currentSourceNode) {
+    try { 
+      currentSourceNode.disconnect(); // Disconnect previous source from gain node
+    } catch(e) {}
+    currentSourceNode = null;        // Clear reference
+  }
 
-  const track = audioCtx.createMediaElementSource(audio);
-  track.connect(gainNode);
+  // -------------------- CREATE NEW AUDIO --------------------
+  const audio = new Audio(src);      // Create a new Audio element
+  audio.crossOrigin = "anonymous";   // Enable cross-origin audio if needed
 
-  currentMusic = audio;
-  currentSourceNode = track;
+  const track = audioCtx.createMediaElementSource(audio); // Connect audio to AudioContext
+  track.connect(gainNode);           // Route audio through gain node for volume control
 
-  audio.play().catch(() => {});
+  currentMusic = audio;              // Store reference to the new Audio object
+  currentSourceNode = track;         // Store reference to the new source node
+
+  // -------------------- PLAY AUDIO --------------------
+  audio.play().catch(() => {});      // Attempt to play audio; ignore errors (e.g., autoplay restrictions)
 }
 
 /* Unlock iOS audio */
