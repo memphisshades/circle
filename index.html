@@ -371,7 +371,22 @@ function createStars(count = 100){
   }
 }
 
-function drawStars(){
+// ↓ NEW: Variables used for throttling the animation to 30fps
+let lastFrameTime = 0;                    // Stores the timestamp of the last rendered frame
+const FRAME_INTERVAL = 1000 / 30;         // 30fps → draw a frame every ~33ms
+
+function drawStars(timestamp) {
+  // ↓ NEW: Throttle rendering — skip frames if called too soon
+  // requestAnimationFrame provides a high-resolution timestamp.
+  // If not enough time has passed since the last frame, we skip drawing.
+  if (timestamp - lastFrameTime < FRAME_INTERVAL) {
+    requestAnimationFrame(drawStars);
+    return;  // Skip rendering to reduce CPU/GPU load
+  }
+  lastFrameTime = timestamp;  // Update last frame time
+
+  // Fill the background with black
+  
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, starCanvas.width, starCanvas.height);
 
