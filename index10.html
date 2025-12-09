@@ -998,8 +998,8 @@ function resetToFirstSlide() {
     
   centerText.removeEventListener("click", resetToFirstSlide);
   coverImage.classList.remove("cover-spin");
-  progressBar.style.width = "0%";
-  progressInput.value = 0;
+  progressBar.style.width = `${((idx + 1) / messages.length) * 100}%`;
+  progressInput.value = -1;
 }
 
 function showMessage(i) {
