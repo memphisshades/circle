@@ -609,7 +609,7 @@ let currentHideCover = null;
 progressInput.addEventListener('input', (e) => {
   const newIdx = parseInt(e.target.value);
   
-  if (!barrel.classList.contains("playing")) return;
+  
   
   sharedAudio.pause();
   sharedAudio.currentTime = 0;
@@ -633,6 +633,11 @@ progressInput.addEventListener('input', (e) => {
   barrel.classList.remove("playing");
   barrel.classList.add("pulse");
   spinHint.classList.remove("hidden");
+  
+    // Ensure user can navigate freely after using slider
+  if (idx >= 0) {
+    firstClickShown = true;
+  }
   
   spinHint.textContent = hints[idx] || "Tap (›)";
   
