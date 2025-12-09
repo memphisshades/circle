@@ -1445,5 +1445,25 @@ window.addEventListener('orientationchange', () => {
 })();
 </script>
 
+  <script>
+    // This script runs after all the elements have been created and styled.
+    document.addEventListener('DOMContentLoaded', function() {
+        const overlay = document.getElementById('navOverlay');
+        
+        // Also ensure the navigation button is visible since the menu is open
+        const navBtn = document.getElementById('openNavBtn'); 
+
+        if (overlay) {
+            // 1. Open the overlay
+            overlay.style.display = "block";
+            
+            // 2. Hide the main navigation button while the overlay is open (optional, but good UX)
+            if (navBtn) {
+                 navBtn.style.display = "none";
+            }
+        }
+    });
+</script>
+
 </body>
 </html>
