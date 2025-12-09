@@ -728,17 +728,49 @@ Object.assign(caption.style, {
   card.appendChild(slideNum);
   card.appendChild(caption);
   
-  card.addEventListener('click', () => {
-    navOverlay.style.display = "none";
-    progressInput.value = i - 1;
-    progressInput.dispatchEvent(new Event('input'));
-    setTimeout(() => {
-      if (!barrel.classList.contains("playing")) {
-        barrel.click();
-      }
-    }, 100);
-  });
-  
+ card.addEventListener('click', () => {
+    navOverlay.style.display = "none";
+    
+    // 1. Pause any playing audio and clear track end listeners
+    sharedAudio.pause();
+    sharedAudio.currentTime = 0;
+    onTrackEnded = null;
+    
+    
+    // NEW: Remove mouseover/touch listeners to prevent accidental hint covering
+    if (currentShowCover) {
+        aperture.removeEventListener("mouseenter", currentShowCover);
+        aperture.removeEventListener("touchstart", currentShowCover);
+    }
+    if (currentHideCover) {
+        aperture.removeEventListener("mouseleave", currentHideCover);
+        aperture.removeEventListener("touchend", currentHideCover);
+    }
+    
+    currentShowCover = null;
+    currentHideCover = null;
+    
+    // 2. Set the index to the selected slide
+    idx = i;
+    
+    // 3. Reset the visual state to display the hint
+    stopStarfield();
+    james.style.display = "none";
+    coverImage.style.display = "none";
+    centerText.classList.remove("show");
+    barrel.classList.remove("playing");
+    barrel.classList.add("pulse"); // Re-enable pulse animation
+    spinHint.classList.remove("hidden");
+    
+    // 4. Display the hint for the selected slide
+    spinHint.textContent = hints[idx] || "Tap (›)";
+    
+    // 5. Update the progress bar and mark as ready for the second stage click
+    progressBar.style.width = `${((idx + 1) / messages.length) * 100}%`;
+    progressInput.value = idx;
+    firstClickShown = true;
+});
+
   navGrid.appendChild(card);
 });
 
@@ -952,6 +984,18 @@ function resetToFirstSlide() {
   sharedAudio.pause();
   sharedAudio.currentTime = 0;
   
+  // NEW: Remove mouseover/touch listeners when resetting
+    if (currentShowCover) {
+        aperture.removeEventListener("mouseenter", currentShowCover);
+        aperture.removeEventListener("touchstart", currentShowCover);
+    }
+    if (currentHideCover) {
+        aperture.removeEventListener("mouseleave", currentHideCover);
+        aperture.removeEventListener("touchend", currentHideCover);
+    }
+    currentShowCover = null;
+    currentHideCover = null;
+    
   centerText.removeEventListener("click", resetToFirstSlide);
   coverImage.classList.remove("cover-spin");
   progressBar.style.width = "0%";
@@ -1051,28 +1095,51 @@ function showMessage(i) {
 }
 
 barrel.addEventListener("click", (e) => {
-  if (dragging || draggingPosition) return;
-  if (barrel.classList.contains("playing")) return;
+  if (dragging || draggingPosition) return;
+  
+  audioCtx.resume();
+  
+  // State 1: Barrel is NOT playing, and we are showing a hint (index is set, either from nav or slide end).
+  if (!barrel.classList.contains("playing") && idx >= 0) {
+    // This is the **second click/tap**: PLAY the currently set slide (idx).
+    showMessage(idx);
+    return; // Track is now playing, so exit.
+  }
 
-  audioCtx.resume();
-
-  if (!firstClickShown) {
-    firstClickShown = true;
-    spinHint.textContent = "Play Audio? (›)";
-    
-    spinHint.onclick = () => {
-      spinHint.classList.add("hidden");
-      idx = 0;
-      showMessage(idx);
-    };
-    return;
-  }
-
-  idx++;
-  if (idx < messages.length) {
-    showMessage(idx);
-  }
+  // State 2: Initial click (if they didn't use the navigation and idx is -1).
+  if (idx === -1) {
+    // First tap: Show the hint for the first slide (idx 0).
+    idx = 0;
+    spinHint.textContent = hints[idx] || "Play Audio? (›)";
+    progressBar.style.width = `${((idx + 1) / messages.length) * 100}%`;
+    progressInput.value = idx;
+    firstClickShown = true;
+    return;
+  }
+  
+  // State 3: User clicks while a slide is playing (do nothing or wait for track to end).
+  if (barrel.classList.contains("playing")) return;
+  
+  // State 4 (Sequential Flow): Advance to the next hint.
+  if (idx < messages.length - 1) {
+    idx++;
+    // Reset state to show the hint for the newly incremented index
+    stopStarfield();
+    james.style.display = "none";
+    coverImage.style.display = "none";
+    centerText.classList.remove("show");
+    barrel.classList.remove("playing");
+    barrel.classList.add("pulse");
+    spinHint.classList.remove("hidden");
+    spinHint.textContent = hints[idx] || "Tap (›)";
+    progressBar.style.width = `${((idx + 1) / messages.length) * 100}%`;
+    progressInput.value = idx;
+  } else if (idx === messages.length - 1) {
+    // Handle loop/reset if on the last slide hint
+    resetToFirstSlide();
+  }
 });
+
 
 function getVolume(e) {
   const rect = barrel.getBoundingClientRect();
