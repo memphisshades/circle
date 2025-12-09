@@ -1055,28 +1055,41 @@ function showMessage(i) {
     aperture.addEventListener("touchend", hideCover);
   }
 
-  onTrackEnded = () => {
-    if (idx === messages.length - 1) {
-      resetToFirstSlide();
-      return;
-    }
+ onTrackEnded = () => {
+    // Check if this was the last slide
+    if (idx === messages.length - 1) {
+      resetToFirstSlide();
+      return;
+    }
 
-    stopStarfield();
-    coverImage.style.display = "none";
-    coverImage.classList.remove("cover-spin");
-    centerText.classList.remove("show");
-    barrel.classList.remove("playing");
-    spinHint.classList.remove("hidden");
-    spinHint.textContent = "Tap (›)";
+    // 1. Advance to the NEXT slide index
+    idx++;
+
+    stopStarfield();
+    coverImage.style.display = "none";
+    coverImage.classList.remove("cover-spin");
+    centerText.classList.remove("show");
+    barrel.classList.remove("playing");
+    barrel.classList.add("pulse"); // Re-enable pulse for hint state
+    spinHint.classList.remove("hidden");
+    
+    // 2. Display the hint for the NEWLY INCREMENTED slide
+    // Use messages.length for bounds checking against hints array
+    spinHint.textContent = hints[idx] || "Tap (›)";
+    
+    // 3. Remove the mouseover listeners (already done, but keeping for completeness)
+    aperture.removeEventListener("mouseenter", showCover);
+    aperture.removeEventListener("mouseleave", hideCover);
+    aperture.removeEventListener("touchstart", showCover);
+    aperture.removeEventListener("touchend", hideCover);
+    
+    currentShowCover = null;
+    currentHideCover = null;
     
-    aperture.removeEventListener("mouseenter", showCover);
-    aperture.removeEventListener("mouseleave", hideCover);
-    aperture.removeEventListener("touchstart", showCover);
-    aperture.removeEventListener("touchend", hideCover);
-    
-    currentShowCover = null;
-    currentHideCover = null;
-  };
+    // 4. Update the progress bar to reflect the new position
+    progressBar.style.width = `${((idx + 1) / messages.length) * 100}%`;
+    progressInput.value = idx;
+  };
 
   if (i === messages.length - 1) {
     stopStarfield();
@@ -1100,7 +1113,7 @@ barrel.addEventListener("click", (e) => {
   audioCtx.resume();
   
   // State 1: Barrel is NOT playing, and we are showing a hint (idx >= 0).
-  // This handles the second tap after a hint is shown (from navigation or track end).
+  // This happens after a track ends or after navigation.
   if (!barrel.classList.contains("playing") && idx >= 0) {
     // PLAY the currently set slide (idx).
     showMessage(idx);
@@ -1118,14 +1131,10 @@ barrel.addEventListener("click", (e) => {
     return;
   }
   
-  // State 3: User clicks while a slide is playing (do nothing or wait for track to end).
+  // State 3: Click while playing - do nothing.
   if (barrel.classList.contains("playing")) return;
-  
-  // State 4 (Sequential Flow): Advance to the NEXT HINT.
-  // This triggers when the barrel is not playing, and idx is already >= 0 (meaning a hint is visible),
-  // but the user is clicking to progress the hint, not to play the current one.
-  if (idx < messages.length - 1) {
-    idx++; // Move to the NEXT index
+});
+  
     
     // ⬇️ ESSENTIAL STEP: Clear playing state and update visuals for the new hint.
     stopStarfield();
