@@ -361,7 +361,7 @@ const messages = [
 ];
 
 const hints = [
-  "Tap", "Tap (›)", "Clues? (›)", "Story? (›)", "Threads (›)",
+  "Play Audio?", "Tap (›)", "Clues? (›)", "Story? (›)", "Threads (›)",
   "Listen? (›)", "Look (›)", "Shards? (›)", "Who? (›)", " "
 ];
 
@@ -835,7 +835,7 @@ Object.assign(openNavBtn.style, {
 });
 
 openNavBtn.addEventListener('mouseenter', () => {
-  openNavBtn.style.backgroundColor = "#ff0040";
+  openNavBtn.style.backgroundColor = "blue";
   openNavBtn.style.transform = "scale(1.1)";
 });
 
@@ -850,6 +850,7 @@ openNavBtn.addEventListener('click', () => {
 
 document.body.appendChild(openNavBtn);
 
+openNavBtn.style.display = "none";
 
 Object.assign(progressBarContainer.style, {
   position: "absolute",
@@ -998,8 +999,8 @@ function resetToFirstSlide() {
     
   centerText.removeEventListener("click", resetToFirstSlide);
   coverImage.classList.remove("cover-spin");
-  progressBar.style.width = "0%";
-  progressInput.value = 0;
+  progressBar.style.width = `${((idx + 1) / messages.length) * 100}%`;
+  progressInput.value = -1;
 }
 
 function showMessage(i) {
@@ -1055,28 +1056,49 @@ function showMessage(i) {
     aperture.addEventListener("touchend", hideCover);
   }
 
-  onTrackEnded = () => {
-    if (idx === messages.length - 1) {
-      resetToFirstSlide();
-      return;
-    }
+ onTrackEnded = () => {
+  // If we just finished the final slide, reset the whole experience.
+  if (idx === messages.length - 1) {
+    resetToFirstSlide();
+    return;
+  }
 
-    stopStarfield();
-    coverImage.style.display = "none";
-    coverImage.classList.remove("cover-spin");
-    centerText.classList.remove("show");
-    barrel.classList.remove("playing");
-    spinHint.classList.remove("hidden");
-    spinHint.textContent = "Tap (›)";
-    
-    aperture.removeEventListener("mouseenter", showCover);
-    aperture.removeEventListener("mouseleave", hideCover);
-    aperture.removeEventListener("touchstart", showCover);
-    aperture.removeEventListener("touchend", hideCover);
-    
-    currentShowCover = null;
-    currentHideCover = null;
-  };
+  // --- START FIX: Advance to the NEXT slide's hint state ---
+
+  // 1. Increment the index to point to the NEXT slide (N+1).
+  idx++; 
+
+  // 2. Remove click/hover listeners added for the just-finished slide.
+  // (This is already correctly implemented below)
+  
+  // 3. Reset visual state to show the hint for the new index.
+  stopStarfield();
+  coverImage.style.display = "none";
+  coverImage.classList.remove("cover-spin");
+  centerText.classList.remove("show");
+  barrel.classList.remove("playing");
+  
+  // 4. Show the hint for the NEW (N+1) index.
+  barrel.classList.add("pulse"); // Re-enable pulse animation
+  spinHint.classList.remove("hidden");
+  spinHint.textContent = hints[idx] || "Tap (›)"; // Use the new idx
+  
+  // 5. Update the progress bar to show the new index hint is ready.
+  progressBar.style.width = `${((idx + 1) / messages.length) * 100}%`;
+  progressInput.value = idx;
+
+  // --- END FIX ---
+
+
+  // Cleanup listeners (already correct in your original code)
+  aperture.removeEventListener("mouseenter", showCover);
+  aperture.removeEventListener("mouseleave", hideCover);
+  aperture.removeEventListener("touchstart", showCover);
+  aperture.removeEventListener("touchend", hideCover);
+
+  currentShowCover = null;
+  currentHideCover = null;
+};
 
   if (i === messages.length - 1) {
     stopStarfield();
@@ -1423,6 +1445,65 @@ window.addEventListener('orientationchange', () => {
   window.addEventListener('orientationchange', () => setTimeout(applyHighResSizing, 200));
 })();
 </script>
+
+  
+  <!-- 
+<script>
+// NOTE: Assuming navOverlay, openNavBtn, and closeBtn were declared as global
+// constants earlier in your main script block, as implied by your previous code.
+
+// 1. Assign IDs (CRITICAL for getting elements by ID later)
+navOverlay.id = "navOverlay";
+openNavBtn.id = "openNavBtn";
+
+// 2. Define the function to run when the page has fully loaded
+function openNavOverlayOnLoad() {
+    // Get elements by ID to avoid scope issues, although they should be global here
+    const overlay = document.getElementById('navOverlay');
+    const navButton = document.getElementById('openNavBtn');
+
+    if (overlay) {
+        // Open the overlay
+        overlay.style.display = "block";
+    }
+    
+    // 3. Hide the main navigation button when the overlay opens
+    if (navButton) {
+        // Must use "none", not "hidden"
+        navButton.style.display = "none";
+    }
+}
+
+// Attach the function to the load event to run once all resources are ready
+window.addEventListener('load', openNavOverlayOnLoad);
+
+// 4. Update the close button logic
+closeBtn.addEventListener('click', () => {
+    // Hide the overlay using the correct CSS value: "none"
+    navOverlay.style.display = "none";
+
+    // Requirement: The menu button must not be visible when the overlay is closed.
+    // Therefore, we DO NOT set openNavBtn.style.display = "block"; here.
+    // It remains hidden as per its default style.
+});
+
+// Final Check: Ensure the initial style is correct (This is done in the creation block)
+// You MUST ensure the initial creation style for openNavBtn remains:
+// display: "none"
+
+// You also need to update the card listener logic, if it was showing the button:
+const navCards = document.querySelectorAll('#navGrid > div'); // Adjust selector as needed
+navCards.forEach(card => {
+    card.addEventListener('click', () => {
+        navOverlay.style.display = "none";
+        // DO NOT show the button here either
+        // ... rest of your card logic
+    });
+});
+</script>
+
+  -->
+  
 
 </body>
 </html>
