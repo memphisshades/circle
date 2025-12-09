@@ -736,6 +736,20 @@ Object.assign(caption.style, {
     sharedAudio.currentTime = 0;
     onTrackEnded = null;
     
+    
+    // NEW: Remove mouseover/touch listeners to prevent accidental hint covering
+    if (currentShowCover) {
+        aperture.removeEventListener("mouseenter", currentShowCover);
+        aperture.removeEventListener("touchstart", currentShowCover);
+    }
+    if (currentHideCover) {
+        aperture.removeEventListener("mouseleave", currentHideCover);
+        aperture.removeEventListener("touchend", currentHideCover);
+    }
+    
+    currentShowCover = null;
+    currentHideCover = null;
+    
     // 2. Set the index to the selected slide
     idx = i;
     
@@ -970,6 +984,18 @@ function resetToFirstSlide() {
   sharedAudio.pause();
   sharedAudio.currentTime = 0;
   
+  // NEW: Remove mouseover/touch listeners when resetting
+    if (currentShowCover) {
+        aperture.removeEventListener("mouseenter", currentShowCover);
+        aperture.removeEventListener("touchstart", currentShowCover);
+    }
+    if (currentHideCover) {
+        aperture.removeEventListener("mouseleave", currentHideCover);
+        aperture.removeEventListener("touchend", currentHideCover);
+    }
+    currentShowCover = null;
+    currentHideCover = null;
+    
   centerText.removeEventListener("click", resetToFirstSlide);
   coverImage.classList.remove("cover-spin");
   progressBar.style.width = "0%";
