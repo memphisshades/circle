@@ -319,8 +319,11 @@ canvas#starfield {
 <script>
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const gainNode = audioCtx.createGain();
-gainNode.gain.value = 0.25;
+gainNode.gain.value = 0; // Start muted
 gainNode.connect(audioCtx.destination);
+
+let isMuted = true;
+let previousVolume = 0.25;
 
 const sharedAudio = new Audio();
 const sharedSource = audioCtx.createMediaElementSource(sharedAudio);
@@ -347,14 +350,14 @@ window.addEventListener('click', unlockAudio, { once: true });
 
 const messages = [
   { line: " ", music: "https://www.jamestobin.xyz/media/intro.mp3", cover: "favicon.jpg", caption: "" },
-  { line: " ", music: "https://www.jamestobin.xyz/media/slide1-reduced.mp3", cover: "images/cover1.png", caption: "Industrial rhythms — metaphor for headhunting and the machinery of recruitment." },
-  { line: " ", music: "https://www.jamestobin.xyz/media/slide_new1.mp3", cover: "images/cover_new1.png", caption: "Commerce rhythm — persuasion." },
-  { line: " ", music: "https://www.jamestobin.xyz/media/slide3-reduced.mp3", cover: "images/cover2.png", caption: "Soulful storytelling — communication expressed through voice, narrative, and empathy." },
-  { line: " ", music: "https://www.jamestobin.xyz/media/slide2-reduced.mp3", cover: "images/cover3.png", caption: "Electronic pulse — technology." },
-  { line: " ", music: "https://www.jamestobin.xyz/media/slide4-reduced.mp3", cover: "images/cover4.png", caption: "Pulse of connection — awareness." },
-  { line: " ", music: "https://www.jamestobin.xyz/media/slide5-reduced.mp3", cover: "images/cover5.png", caption: "Pop anthem — artistry." },
-  { line: " ", music: "https://www.jamestobin.xyz/media/slide6-reduced.mp3", cover: "images/cover6.png", caption: "Voice of inquiry — shards of identity." },
-  { line: "I'm James Tobin.", music: "https://www.jamestobin.xyz/media/slide7.mp3", caption: "Empowered closure — affirmation." }
+  { line: " ", music: "https://www.jamestobin.xyz/media/slide1-reduced.mp3", cover: "images/cover1.png", caption: "Industrial rhythms — metaphor for headhunting (Front 242)" },
+  { line: " ", music: "https://www.jamestobin.xyz/media/slide_new1.mp3", cover: "images/cover_new1.png", caption: "The art of influence and persuasion (AIJ. Jones)" },
+  { line: " ", music: "https://www.jamestobin.xyz/media/slide3-reduced.mp3", cover: "images/cover2.png", caption: "Sharing raw emotion and human experience through narrative (Tracy Chapman)" },
+  { line: " ", music: "https://www.jamestobin.xyz/media/slide2-reduced.mp3", cover: "images/cover3.png", caption: "Channeling the precision and innovation of creative and digital skills (Kraftwerk)" },
+  { line: " ", music: "https://www.jamestobin.xyz/media/slide4-reduced.mp3", cover: "images/cover4.png", caption: "Building tech that connects through voice and entertainment (Stereo MCs)" },
+  { line: " ", music: "https://www.jamestobin.xyz/media/slide5-reduced.mp3", cover: "images/cover5.png", caption: "Channeling creativity through visual and digital art. (a-ha)" },
+  { line: " ", music: "https://www.jamestobin.xyz/media/slide6-reduced.mp3", cover: "images/cover6.png", caption: "Questioning, discovering, and shaping who I am — not defined by just one skill or job. (Edie Brickell)" },
+  { line: "I'm James Tobin.", music: "https://www.jamestobin.xyz/media/slide7.mp3", caption: "I am James Tobin - empowered affirmation (Aloe Blacc)" }
 ];
 
 const hints = [
@@ -470,7 +473,7 @@ Object.assign(volumeSliderContainer.style, {
   zIndex: "1000"
 });
 
-volumeLabel.textContent = "VOLUME";
+volumeLabel.textContent = "🔇 VOLUME";
 Object.assign(volumeLabel.style, {
   color: "#c4002f",
   fontSize: "14px",
@@ -479,7 +482,10 @@ Object.assign(volumeLabel.style, {
   letterSpacing: "0.05em",
   minWidth: "70px",
   opacity: "0.9",
-  flexShrink: "0"
+  flexShrink: "0",
+  cursor: "pointer",
+  transition: "all 0.3s ease",
+  userSelect: "none"
 });
 
 const volumeBarWrapper = document.createElement('div');
@@ -495,7 +501,7 @@ Object.assign(volumeFill.style, {
   position: "absolute",
   height: "100%",
   backgroundColor: "#c4002f",
-  width: "25%",
+  width: "0%", // Start at 0 for muted state
   pointerEvents: "none",
   transition: "width 0.05s linear",
   borderRadius: "4px"
@@ -504,7 +510,7 @@ Object.assign(volumeFill.style, {
 volumeSlider.type = "range";
 volumeSlider.min = "0";
 volumeSlider.max = "100";
-volumeSlider.value = "25";
+volumeSlider.value = "0"; // Start at 0 for muted state
 Object.assign(volumeSlider.style, {
   position: "absolute",
   top: "0",
@@ -522,12 +528,66 @@ volumeSliderContainer.appendChild(volumeLabel);
 volumeSliderContainer.appendChild(volumeBarWrapper);
 document.body.appendChild(volumeSliderContainer);
 
+// Mute/Unmute toggle functionality
+volumeLabel.addEventListener('click', () => {
+  if (isMuted) {
+    // Unmute
+    isMuted = false;
+    gainNode.gain.value = previousVolume;
+    volumeSlider.value = Math.round(previousVolume * 100);
+    volumeFill.style.width = `${Math.round(previousVolume * 100)}%`;
+    volumeLabel.textContent = "🔊 VOLUME";
+    
+    volumeIndicator.textContent = `Volume: ${Math.round(previousVolume * 100)}%`;
+    volumeIndicator.classList.add("show");
+    clearTimeout(window.volumeIndicatorTimeout);
+    window.volumeIndicatorTimeout = setTimeout(() => {
+      volumeIndicator.classList.remove("show");
+    }, 1000);
+  } else {
+    // Mute
+    isMuted = true;
+    previousVolume = gainNode.gain.value;
+    gainNode.gain.value = 0;
+    volumeSlider.value = 0;
+    volumeFill.style.width = "0%";
+    volumeLabel.textContent = "🔇 VOLUME";
+    
+    volumeIndicator.textContent = "Muted";
+    volumeIndicator.classList.add("show");
+    clearTimeout(window.volumeIndicatorTimeout);
+    window.volumeIndicatorTimeout = setTimeout(() => {
+      volumeIndicator.classList.remove("show");
+    }, 1000);
+  }
+});
+
+volumeLabel.addEventListener('mouseenter', () => {
+  volumeLabel.style.opacity = "1";
+  volumeLabel.style.transform = "scale(1.05)";
+});
+
+volumeLabel.addEventListener('mouseleave', () => {
+  volumeLabel.style.opacity = "0.9";
+  volumeLabel.style.transform = "scale(1)";
+});
+
 volumeSlider.addEventListener('input', (e) => {
   const v = e.target.value / 100;
   gainNode.gain.value = v;
   volumeFill.style.width = `${e.target.value}%`;
   
-  volumeIndicator.textContent = `Volume: ${e.target.value}%`;
+  // Update mute state based on slider value
+  if (v === 0) {
+    isMuted = true;
+    volumeLabel.textContent = "🔇 VOLUME";
+  } else {
+    isMuted = false;
+    previousVolume = v;
+    volumeLabel.textContent = "🔊 VOLUME";
+  }
+  
+  volumeIndicator.textContent = v === 0 ? "Muted" : `Volume: ${e.target.value}%`;
   volumeIndicator.classList.add("show");
   
   clearTimeout(window.volumeIndicatorTimeout);
@@ -540,6 +600,224 @@ const progressBarContainer = document.createElement('div');
 const progressBar = document.createElement('div');
 const progressInput = document.createElement('input');
 const progressLabel = document.createElement('div');
+
+
+// Create navigation overlay
+const navOverlay = document.createElement('div');
+Object.assign(navOverlay.style, {
+  position: "fixed",
+  top: "0",
+  left: "0",
+  width: "100%",
+  height: "100%",
+  backgroundColor: "rgba(0, 0, 0, 0.95)",
+  zIndex: "9999",
+  display: "none",
+  overflowY: "auto",
+  padding: "40px 20px"
+});
+
+const navContent = document.createElement('div');
+Object.assign(navContent.style, {
+  maxWidth: "800px",
+  margin: "0 auto",
+  color: "#fff"
+});
+
+const navTitle = document.createElement('h2');
+navTitle.textContent = "";
+Object.assign(navTitle.style, {
+  fontSize: "2rem",
+  marginBottom: "20px",
+  color: "#c4002f",
+  textAlign: "center",
+  textTransform: "uppercase",
+  letterSpacing: "0.1em"
+});
+
+const manifestoText = document.createElement('div');
+manifestoText.innerHTML = `
+  <p style="margin-bottom: 1em;">This work is a refusal to be reduced to labels.<br>
+  Not a résumé.<br>
+  Not a list of jobs.</p>
+  
+  <p style="margin-bottom: 1em;">Fragments: prompts, songs, symbols.<br>
+  Each tap is discovery.<br>
+  Each track, a metaphor for skill, experience, or transformation.</p>
+  
+ 
+  
+  <p style="margin-bottom: 1em;">The music carries the weight of identity.<br>
+  The prompts are shards of language, guiding the viewer toward deeper listening, closer looking, and questioning of self.</p>
+  
+  <p style="margin-bottom: 1em;">Meaning is assembled, not given.<br>
+  Connection is felt, not consumed.</p>
+  
+  <p style="margin-bottom: 1em;">This is not a portfolio.<br>
+  It is record and inquiry.<br>
+  It is resistance.<br>
+  It is stance.</p>
+  
+  <p style="margin-bottom: 0;">I am James Tobin.</p>
+`;
+Object.assign(manifestoText.style, {
+  fontSize: "0.95rem",
+  lineHeight: "1.7",
+  color: "#f2f2f2",
+  marginBottom: "40px",
+  paddingBottom: "30px",
+  borderBottom: "1px solid rgba(196, 0, 47, 0.3)",
+  textAlign: "left",
+  maxWidth: "700px",
+  margin: "0 auto 40px"
+});
+
+const navGrid = document.createElement('div');
+Object.assign(navGrid.style, {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+  gap: "20px",
+  marginBottom: "30px"
+});
+
+messages.forEach((msg, i) => {
+  const card = document.createElement('div');
+  Object.assign(card.style, {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    padding: "20px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    border: "2px solid transparent"
+  });
+  
+  card.addEventListener('mouseenter', () => {
+    card.style.backgroundColor = "rgba(196, 0, 47, 0.2)";
+    card.style.borderColor = "#c4002f";
+    card.style.transform = "translateY(-4px)";
+  });
+  
+  card.addEventListener('mouseleave', () => {
+    card.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+    card.style.borderColor = "transparent";
+    card.style.transform = "translateY(0)";
+  });
+  
+  const slideNum = document.createElement('div');
+ slideNum.textContent = i === 0 ? "1." : `${i + 1}`;  Object.assign(slideNum.style, {
+    fontSize: "0.9rem",
+    color: "#c4002f",
+    fontWeight: "600",
+    marginBottom: "10px",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em"
+  });
+  
+  
+ const caption = document.createElement('div');
+
+// Override the first slide caption
+caption.textContent = i === 0 ? "Introduction" : (msg.caption || hints[i] || "Tap to explore");
+
+Object.assign(caption.style, {
+  fontSize: "0.95rem",
+  lineHeight: "1.5",
+  color: "#f2f2f2"
+});
+  
+  card.appendChild(slideNum);
+  card.appendChild(caption);
+  
+  card.addEventListener('click', () => {
+    navOverlay.style.display = "none";
+    progressInput.value = i - 1;
+    progressInput.dispatchEvent(new Event('input'));
+    setTimeout(() => {
+      if (!barrel.classList.contains("playing")) {
+        barrel.click();
+      }
+    }, 100);
+  });
+  
+  navGrid.appendChild(card);
+});
+
+const closeBtn = document.createElement('button');
+closeBtn.textContent = "Close";
+Object.assign(closeBtn.style, {
+  display: "block",
+  margin: "30px auto 0",
+  padding: "12px 40px",
+  backgroundColor: "#c4002f",
+  color: "#fff",
+  border: "none",
+  borderRadius: "6px",
+  fontSize: "1rem",
+  fontWeight: "600",
+  cursor: "pointer",
+  textTransform: "uppercase",
+  letterSpacing: "0.05em",
+  transition: "all 0.3s ease"
+});
+
+closeBtn.addEventListener('mouseenter', () => {
+  closeBtn.style.backgroundColor = "#ff0040";
+  closeBtn.style.transform = "scale(1.05)";
+});
+
+closeBtn.addEventListener('mouseleave', () => {
+  closeBtn.style.backgroundColor = "#c4002f";
+  closeBtn.style.transform = "scale(1)";
+});
+
+closeBtn.addEventListener('click', () => {
+  navOverlay.style.display = "none";
+});
+
+navContent.appendChild(navTitle);
+navContent.appendChild(manifestoText);
+navContent.appendChild(navGrid);
+navContent.appendChild(closeBtn);
+navOverlay.appendChild(navContent);
+document.body.appendChild(navOverlay);
+
+// Add button to open overlay
+const openNavBtn = document.createElement('button');
+openNavBtn.textContent = "☰";
+Object.assign(openNavBtn.style, {
+  position: "fixed",
+  top: "20px",
+  right: "20px",
+  width: "50px",
+  height: "50px",
+  backgroundColor: "rgba(196, 0, 47, 0.9)",
+  color: "#fff",
+  border: "none",
+  display: "none",
+  borderRadius: "50%",
+  fontSize: "1.5rem",
+  cursor: "pointer",
+  zIndex: "1001",
+  transition: "all 0.3s ease",
+  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)"
+});
+
+openNavBtn.addEventListener('mouseenter', () => {
+  openNavBtn.style.backgroundColor = "#ff0040";
+  openNavBtn.style.transform = "scale(1.1)";
+});
+
+openNavBtn.addEventListener('mouseleave', () => {
+  openNavBtn.style.backgroundColor = "rgba(196, 0, 47, 0.9)";
+  openNavBtn.style.transform = "scale(1)";
+});
+
+openNavBtn.addEventListener('click', () => {
+  navOverlay.style.display = "block";
+});
+
+document.body.appendChild(openNavBtn);
+
 
 Object.assign(progressBarContainer.style, {
   position: "absolute",
@@ -561,7 +839,21 @@ Object.assign(progressLabel.style, {
   letterSpacing: "0.05em",
   minWidth: "80px",
   opacity: "0.9",
-  flexShrink: "0"
+  flexShrink: "0",
+  cursor: "pointer",
+  transition: "color 0.3s ease"
+});
+
+progressLabel.addEventListener('mouseenter', () => {
+  progressLabel.style.color = "#c4002f";
+});
+
+progressLabel.addEventListener('mouseleave', () => {
+  progressLabel.style.color = "#fff";
+});
+
+progressLabel.addEventListener('click', () => {
+  navOverlay.style.display = "block";
 });
 
 const progressBarInner = document.createElement('div');
@@ -871,16 +1163,28 @@ window.addEventListener("mousemove", (e) => {
     barrelY = e.clientY - dragStartY;
     barrel.style.left = `${barrelX}px`;
     barrel.style.top = `${barrelY}px`;
-  } else if (dragging) {
+    } else if (dragging) {
     const v = getVolume(e);
     gainNode.gain.value = v;
-    volumeIndicator.textContent = `Volume: ${Math.round(v * 100)}%`;
+    
+    // Update mute state
+    if (v === 0) {
+      isMuted = true;
+      volumeLabel.textContent = "🔇 VOLUME";
+      volumeIndicator.textContent = "Muted";
+    } else {
+      isMuted = false;
+      previousVolume = v;
+      volumeLabel.textContent = "🔊 VOLUME";
+      volumeIndicator.textContent = `Volume: ${Math.round(v * 100)}%`;
+    }
     
     volumeSlider.value = Math.round(v * 100);
     volumeFill.style.width = `${Math.round(v * 100)}%`;
     
     barrel.classList.add("dragging-volume");
     outerRing.classList.add("active");
+  
   }
 });
 
@@ -1055,5 +1359,3 @@ window.addEventListener('orientationchange', () => {
 
 </body>
 </html>
-
-
