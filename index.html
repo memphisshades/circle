@@ -69,7 +69,6 @@ I am James Tobin.
 
   </head>
 
-
 <style>
 :root {
   --bg: #000;
@@ -82,12 +81,12 @@ html, body {
   margin: 0;
   background: var(--bg);
   overflow: hidden;
-    transition: opacity 1s ease-out; /* Smooth fade-in effect */
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   color: var(--text);
+  
 }
 
-  
+
 .stage {
   position: relative;
   width: 100vw;
@@ -97,43 +96,82 @@ html, body {
   justify-content: center;
   background: black;
 }
+
 .barrel {
-  position: relative;
-  width: min(78vmin, 680px);
-  height: min(78vmin, 680px);
+  animation: gentlePulse 4s ease-in-out infinite;
+  position: absolute;
+  width: 70vmin;
+  height: 70vmin;
+  max-width: 680px;
+  max-height: 680px;
   border-radius: 50%;
   overflow: hidden;
-  cursor: pointer;
+  cursor: grab;
   box-shadow: 0 0 40px rgba(255, 255, 255, 0.12);
-    animation:
-    pulseCircle 2.4s ease-in-out infinite,
-    wobble 4.8s ease-in-out infinite;
-  animation-play-state: running, paused; /* pulse runs, wobble paused */
   z-index: 3;
+  touch-action: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-.barrel.idle-wobble { animation: pulseCircle 2.4s ease-in-out infinite, wobble 4.8s ease-in-out infinite; }
-
-@keyframes wobble {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  25% { transform: rotate(1.2deg) scale(1.02); }
-  50% { transform: rotate(-1deg) scale(1.03); }
-  75% { transform: rotate(0.6deg) scale(1.01); }
+.barrel:hover {
+  box-shadow: 0 0 80px rgba(196, 0, 47, 0.8), 0 0 150px rgba(196, 0, 47, 0.4);
+  transition: box-shadow 0.3s ease-in-out; /* Smooth transition for lighting */
 }
 
 
+.barrel.dragging-volume {
+  box-shadow: 0 0 0px rgba(0, 0, 0, 0.0), 0 0 0px rgba(0, 0, 0, 0);
+  animation: none;
+}
+
+
+.barrel.pulse {
+  animation: pulseCircle 2s ease-in-out infinite;
+}
+
+.barrel.dragging-position {
+  cursor: grabbing;
+}
+
+
+.barrel:not(.dragging-volume):not(:hover) {
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.12);
+}
+
+
+@keyframes gentlePulse {
+  0%, 100% { box-shadow: 0 0 30px rgba(196, 0, 47, 0.3); }
+  50% { box-shadow: 0 0 50px rgba(196, 0, 47, 0.5); }
+}
 
 @keyframes pulseCircle {
   0%, 100% { 
     transform: scale(1); 
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);  /* Brighter outer glow */
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
   }
   50% { 
     transform: scale(1.03); 
-    box-shadow: 0 0 30px rgba(196, 0, 47, 0.6);  /* Brighter, more intense red pulse */
+    box-shadow: 0 0 30px rgba(196, 0, 47, 0.6);
   }
 }
 
+.outer-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  transition: box-shadow 0.15s ease;
+  z-index: 1;
+}
+
+.outer-ring.active {
+  box-shadow: inset 0 0 40px rgba(196, 0, 47, 0.6), inset 0 0 80px rgba(196, 0, 47, 0.3);
+}
 
 .aperture {
   position: absolute;
@@ -148,6 +186,7 @@ html, body {
   z-index: 2;
   overflow: hidden;
 }
+
 canvas#starfield {
   position: absolute;
   inset: 0;
@@ -157,17 +196,14 @@ canvas#starfield {
   display: none;
   z-index: 5;
 }
-#jamesImage {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: none;
-  z-index: 6;
-}
+
 #coverImage {
   position: absolute;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -175,12 +211,11 @@ canvas#starfield {
   border-radius: 50%;
   display: none;
   z-index: 20;
-   filter: grayscale(100%);
 }
 
 .cover-spin {
-  animation: spin 6s linear infinite;  /* spins continuously */
-  transform-origin: 50% 50%;           /* rotate around center */
+  animation: spin 6s linear infinite;
+  transform-origin: 50% 50%;
 }
 
 @keyframes spin {
@@ -188,14 +223,13 @@ canvas#starfield {
   to { transform: rotate(360deg); }
 }
 
-
 .spin-hint {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   color: #d9d9d9;
-  font-size: 1rem;
+  font-size: 2vmin;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   opacity: 0.65;
@@ -206,13 +240,13 @@ canvas#starfield {
   max-width: 90%;
   text-align: center;
 }
-@media (max-width: 600px) {
-  .spin-hint { font-size: 0.7rem; }
-}
-
 
 .spin-hint.hidden { display: none !important; }
-@keyframes pulse { 0%,100%{opacity:0.4}50%{opacity:0.9} }
+
+@keyframes pulse { 
+  0%,100%{opacity:0.4}
+  50%{opacity:0.9} 
+}
 
 .center-text {
   position: absolute;
@@ -220,20 +254,16 @@ canvas#starfield {
   left: 50%;
   transform: translate(-50%, -50%);
   color: #fff;
-  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   font-size: 2.6vmin;
   text-align: center;
   z-index: 21;
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
-  letter-spacing: 1px;
 }
+
 .center-text.show { opacity: 1; }
-@media (max-width: 600px) { .center-text { font-size: 0.5rem; } }
 
 .volume-indicator {
   position: absolute;
@@ -250,117 +280,100 @@ canvas#starfield {
   opacity: 0;
   transition: opacity 0.1s;
   z-index: 7;
-  text-align: center;
 }
+
 .volume-indicator.show { opacity: 1; }
+
+#jamesImage {
+  position: absolute;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+  z-index: 6;
+}
 </style>
 </head>
-<body>
+<body id="artifacts-component-root-html">
 
 <div class="stage">
- <div class="barrel" id="barrel" role="button" tabindex="0" aria-label="Tap to reveal the next scene">
+  <div class="barrel pulse" id="barrel">
+    <div class="outer-ring" id="outerRing"></div>
     <div class="aperture" id="aperture">
       <canvas id="starfield"></canvas>
-      <img id="jamesImage" src="images/jamestobin_2.png" />
-      <img id="coverImage" src="" />
+      <img id="jamesImage" src="images/jamestobin_2.png" alt="James Tobin" />
+      <img id="coverImage" src="" alt="Cover" />
       <div id="centerText" class="center-text"></div>
-      <!-- <div id="volumeIndicator" class="volume-indicator">Volume: 25%</div>--> 
-      <div id="volumeIndicator" class="volume-indicator" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="25" aria-label="Volume control">Volume: 25%</div>
+      <div id="volumeIndicator" class="volume-indicator">Volume: 25%</div>
     </div>
     <div class="spin-hint" id="spinHint">Tap | Touch</div>
   </div>
 </div>
+
 <script>
-
- /* -------------------- AUDIO ENGINE (GainNode) -------------------- */
-/* 
-  This section handles playing audio tracks for each slide through a GainNode 
-  for volume control. 
-
-  Previously, creating a new Audio object and MediaElementSourceNode for each slide 
-  without fully cleaning up the previous ones could accumulate memory and crash Chrome, 
-  especially on mobile or with many slides.
-
-  This fix ensures that before playing a new track:
-    1. The previous Audio object is paused, its src cleared, and it is reset via load().
-    2. The previous MediaElementSourceNode is disconnected from the AudioContext.
-    3. Only one audio track is active at a time.
-    4. Memory is properly released to prevent browser crashes.
-
-  The code below creates a new Audio object, connects it through the GainNode, 
-  and starts playback safely.
-*/
-
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const gainNode = audioCtx.createGain();
-gainNode.gain.value = 0.25;           // Set initial volume (25%)
-gainNode.connect(audioCtx.destination); // Connect gain node to speakers
+gainNode.gain.value = 0.25;
+gainNode.connect(audioCtx.destination);
 
-let currentMusic = null;        // Holds the currently playing Audio object
-let currentSourceNode = null;   // Holds the current MediaElementSourceNode
+const sharedAudio = new Audio();
+const sharedSource = audioCtx.createMediaElementSource(sharedAudio);
+sharedSource.connect(gainNode);
 
-/* Play audio through gain node */
+let onTrackEnded = null;
+sharedAudio.onended = () => {
+  if (onTrackEnded) onTrackEnded();
+};
+
 function playThroughGain(src) {
-  // -------------------- CLEANUP PREVIOUS AUDIO --------------------
-  if (currentMusic) {
-    currentMusic.pause();       // Stop playback of previous audio
-    currentMusic.src = "";      // Release memory by clearing source
-    currentMusic.load();        // Fully reset the audio element
-    currentMusic = null;        // Remove reference to allow garbage collection
-  }
-
-  if (currentSourceNode) {
-    try { 
-      currentSourceNode.disconnect(); // Disconnect previous source from gain node
-    } catch(e) {}
-    currentSourceNode = null;        // Clear reference
-  }
-
-  // -------------------- CREATE NEW AUDIO --------------------
-  const audio = new Audio(src);      // Create a new Audio element
-  audio.crossOrigin = "anonymous";   // Enable cross-origin audio if needed
-
-  const track = audioCtx.createMediaElementSource(audio); // Connect audio to AudioContext
-  track.connect(gainNode);           // Route audio through gain node for volume control
-
-  currentMusic = audio;              // Store reference to the new Audio object
-  currentSourceNode = track;         // Store reference to the new source node
-
-  // -------------------- PLAY AUDIO --------------------
-  audio.play().catch(() => {});      // Attempt to play audio; ignore errors (e.g., autoplay restrictions)
+  sharedAudio.pause();
+  sharedAudio.src = src;
+  sharedAudio.load();
+  sharedAudio.play().catch(() => {});
 }
-
-/* Unlock iOS audio */
-const silentTrack = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=');
-silentTrack.loop = true;
-silentTrack.volume = 0;
 
 function unlockAudio() {
-  silentTrack.play().catch(() => {});
+  const silent = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=');
+  silent.play().catch(() => {});
 }
 window.addEventListener('touchstart', unlockAudio, { once: true });
-window.addEventListener('mousedown', unlockAudio, { once: true });
-
-/* -------------------- UI + STARFIELD -------------------- */
+window.addEventListener('click', unlockAudio, { once: true });
 
 const messages = [
-  // New Slide First
+  { line: " ", music: "media/intro.mp3", cover: "favicon.jpg", caption: "" },
+  { line: " ", music: "media/slide1-reduced.mp3", cover: "images/cover1.png", caption: "Industrial rhythms — metaphor for headhunting and the machinery of recruitment." },
+  { line: " ", music: "media/slide_new1.mp3", cover: "images/cover_new1.png", caption: "Commerce rhythm — persuasion." },
+  { line: " ", music: "media/slide3-reduced.mp3", cover: "images/cover2.png", caption: "Soulful storytelling — communication expressed through voice, narrative, and empathy." },
+  { line: " ", music: "media/slide2-reduced.mp3", cover: "images/cover3.png", caption: "Electronic pulse — technology." },
+  { line: " ", music: "media/slide4-reduced.mp3", cover: "images/cover4.png", caption: "Pulse of connection — awareness." },
+  { line: " ", music: "media/slide5-reduced.mp3", cover: "images/cover5.png", caption: "Pop anthem — artistry." },
+  { line: " ", music: "media/slide6-reduced.mp3", cover: "images/cover6.png", caption: "Voice of inquiry — shards of identity." },
+  { line: "I'm James Tobin.", music: "media/slide7.mp3", caption: "Empowered closure — affirmation." }
+];
 
-  { line: " ", music: "media/intro.mp4", cover: "favicon.jpg", caption: "" },
-
-  { line: " ", music: "media/slide1-reduced.mp4", cover: "images/cover1.png", caption: "Industrial rhythms — metaphor for headhunting and the machinery of recruitment." },
-  { line: " ", music: "media/slide_new1.mp4", cover: "images/cover_new1.png", caption: "Commerce rhythm — persuasion." },
-  { line: " ", music: "media/slide3-reduced.mp4", cover: "images/cover2.png", caption: "Soulful storytelling — communication expressed through voice, narrative, and empathy." },
-  { line: " ", music: "media/slide2-reduced.mp4", cover: "images/cover3.png", caption: "Electronic pulse — technology." },
-  { line: " ", music: "media/slide4-reduced.mp4", cover: "images/cover4.png", caption: "Pulse of connection — awareness." },
-  { line: " ", music: "media/slide5-reduced.mp4", cover: "images/cover5.png", caption: "Pop anthem — artistry." },
-  { line: " ", music: "media/slide6-reduced.mp4", cover: "images/cover6.png", caption: "Voice of inquiry — shards of identity." },
-  { line: "I'm James Tobin.", music: "media/slide7.mp4", caption: "Empowered closure — affirmation." }
+const hints = [
+  "Tap", "Tap (›)", "Clues? (›)", "Story? (›)", "Threads (›)",
+  "Listen? (›)", "Look (›)", "Shards? (›)", "Who? (›)", " "
 ];
 
 let idx = -1;
+let firstClickShown = false;
+let dragging = false;
+let draggingPosition = false;
+let dragStartX = 0;
+let dragStartY = 0;
+let barrelX = 0;
+let barrelY = 0;
+let manuallyPositioned = false;
 
 const barrel = document.getElementById("barrel");
+const outerRing = document.getElementById("outerRing");
 const spinHint = document.getElementById("spinHint");
 const aperture = document.getElementById("aperture");
 const starCanvas = document.getElementById("starfield");
@@ -371,62 +384,40 @@ const coverImage = document.getElementById("coverImage");
 const volumeIndicator = document.getElementById("volumeIndicator");
 
 let stars = [];
-let dragging = false;
+let animationFrameId;
+let lastFrameTime = 0;
+const FRAME_INTERVAL = 1000 / 30;
 
-// Flag to track first click hint
-let firstClickHintShown = false;
-
-/* Resize canvas */
 function resizeCanvas() {
-  const visible = starCanvas.style.display === "block";
-  starCanvas.width = aperture.clientWidth;
-  starCanvas.height = aperture.clientHeight;
-  if (visible) createStars();
+  starCanvas.width = aperture.offsetWidth;
+  starCanvas.height = aperture.offsetHeight;
 }
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
 
-/* -------------------- Starfield -------------------- */
-function createStars(count = 100){
+function createStars(count = 100) {
   stars = [];
   for (let i = 0; i < count; i++) {
     stars.push({
       x: Math.random() * starCanvas.width,
       y: Math.random() * starCanvas.height,
       r: Math.random() * 2 + 0.5,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
+      vx: (Math.random() - 0.5) * 1.2,
+      vy: (Math.random() - 0.5) * 1.2,
       alpha: Math.random() * 0.7 + 0.3,
-      color: `hsl(${Math.random() * 10 + 350}, 100%, 80%)`  // Star color (mostly red hues)
+      color: `hsl(${Math.random() * 10 + 350}, 100%, 80%)`
     });
   }
 }
 
-// ↓ NEW: Variables used for throttling the animation to 30fps
-let lastFrameTime = 0;                    // Stores the timestamp of the last rendered frame
-const FRAME_INTERVAL = 1000 / 30;         // 30fps → draw a frame every ~33ms
-
 function drawStars(timestamp) {
-  // ↓ NEW: Throttle rendering — skip frames if called too soon
-  // requestAnimationFrame provides a high-resolution timestamp.
-  // If not enough time has passed since the last frame, we skip drawing.
   if (timestamp - lastFrameTime < FRAME_INTERVAL) {
-    requestAnimationFrame(drawStars);
-    return;  // Skip rendering to reduce CPU/GPU load
+    animationFrameId = requestAnimationFrame(drawStars);
+    return;
   }
-  lastFrameTime = timestamp;  // Update last frame time
+  lastFrameTime = timestamp;
 
-  // Fill the background with black
-  
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, starCanvas.width, starCanvas.height);
 
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(starCanvas.width / 2, starCanvas.height / 2, starCanvas.width / 2, 0, Math.PI * 2);
-  ctx.clip();
-
-  // Draw each star
   for (let s of stars) {
     ctx.beginPath();
     ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
@@ -434,529 +425,630 @@ function drawStars(timestamp) {
     ctx.globalAlpha = s.alpha;
     ctx.fill();
 
-    // Update the star's position (wrap around if it goes off the screen)
     s.x += s.vx;
     s.y += s.vy;
+
     if (s.x < 0) s.x = starCanvas.width;
     if (s.x > starCanvas.width) s.x = 0;
     if (s.y < 0) s.y = starCanvas.height;
     if (s.y > starCanvas.height) s.y = 0;
   }
 
-  ctx.restore();
-  requestAnimationFrame(drawStars);  // Continue the animation loop
+  ctx.globalAlpha = 1;
+  animationFrameId = requestAnimationFrame(drawStars);
 }
 
-function startStarfield() { 
-  starCanvas.style.display = "block"; 
-  createStars(); 
-  drawStars(); 
+function startStarfield() {
+  resizeCanvas();
+  createStars();
+  starCanvas.style.display = "block";
+  animationFrameId = requestAnimationFrame(drawStars);
 }
 
-function stopStarfield() { 
-  starCanvas.style.display = "none"; 
+function stopStarfield() {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+  }
+  starCanvas.style.display = "none";
 }
 
-/* -------------------- SHOW SLIDE -------------------- */
+const barrelElement = document.querySelector('.barrel'); // Update selector accordingly
 
-function resetToFirstSlide() {
-    idx = -1;  // not 0
-    stopStarfield();
-    james.style.display = "none";
-    coverImage.style.display = "none";
-    centerText.classList.remove("show");
-    spinHint.textContent = "Tap";
-    spinHint.classList.remove("hidden");
-    barrel.classList.add("idle-wobble"); 
-    barrel.classList.remove("playing"); 
+const volumeSliderContainer = document.createElement('div');
+const volumeSlider = document.createElement('input');
+const volumeFill = document.createElement('div');
+const volumeLabel = document.createElement('div');
 
-    // Make sure audio does NOT play automatically
-    if(currentMusic){
-        currentMusic.pause();
-        currentMusic.currentTime = 0;
-    }
-    
-       /* 🔥 FIX: Clear final slide state */
-    centerText.textContent = "";                            // remove "I'm James Tobin."
-    centerText.removeEventListener("click", resetToFirstSlide); // remove the click trigger
-    coverImage.classList.remove("cover-spin");              // (optional) ensure spin resets
-}
+Object.assign(volumeSliderContainer.style, {
+  position: "absolute",
+  top: "20px",
+  left: "20px",
+  width: "calc(100% - 40px)",
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  zIndex: "1000"
+});
 
+volumeLabel.textContent = "VOLUME";
+Object.assign(volumeLabel.style, {
+  color: "#c4002f",
+  fontSize: "14px",
+  fontWeight: "600",
+  textTransform: "uppercase",
+  letterSpacing: "0.05em",
+  minWidth: "70px",
+  opacity: "0.9",
+  flexShrink: "0"
+});
 
+const volumeBarWrapper = document.createElement('div');
+Object.assign(volumeBarWrapper.style, {
+  position: "relative",
+  flex: "1",
+  height: "8px",
+  backgroundColor: "rgba(255, 255, 255, 0.2)",
+  borderRadius: "4px"
+});
 
-/* -------------------- Progress Bar -------------------- */
+Object.assign(volumeFill.style, {
+  position: "absolute",
+  height: "100%",
+  backgroundColor: "#c4002f",
+  width: "25%",
+  pointerEvents: "none",
+  transition: "width 0.05s linear",
+  borderRadius: "4px"
+});
 
-// Initialize progress bar outside of showMessage
+volumeSlider.type = "range";
+volumeSlider.min = "0";
+volumeSlider.max = "100";
+volumeSlider.value = "25";
+Object.assign(volumeSlider.style, {
+  position: "absolute",
+  top: "0",
+  left: "0",
+  width: "100%",
+  height: "100%",
+  cursor: "pointer",
+  opacity: "0",
+  zIndex: "2"
+});
+
+volumeBarWrapper.appendChild(volumeFill);
+volumeBarWrapper.appendChild(volumeSlider);
+volumeSliderContainer.appendChild(volumeLabel);
+volumeSliderContainer.appendChild(volumeBarWrapper);
+document.body.appendChild(volumeSliderContainer);
+
+volumeSlider.addEventListener('input', (e) => {
+  const v = e.target.value / 100;
+  gainNode.gain.value = v;
+  volumeFill.style.width = `${e.target.value}%`;
+  
+  volumeIndicator.textContent = `Volume: ${e.target.value}%`;
+  volumeIndicator.classList.add("show");
+  
+  clearTimeout(window.volumeIndicatorTimeout);
+  window.volumeIndicatorTimeout = setTimeout(() => {
+    volumeIndicator.classList.remove("show");
+  }, 1000);
+});
+
 const progressBarContainer = document.createElement('div');
 const progressBar = document.createElement('div');
-progressBarContainer.style.position = "absolute";
-progressBarContainer.style.bottom = "10px";  
-progressBarContainer.style.left = "10px";
-progressBarContainer.style.width = "calc(100% - 20px)";  
-progressBarContainer.style.height = "8px";  
-progressBarContainer.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
-progressBarContainer.style.borderRadius = "4px";
-progressBar.style.height = "100%";
-progressBar.style.backgroundColor = "#c4002f";  
-progressBar.style.width = "0%";  
+const progressInput = document.createElement('input');
+const progressLabel = document.createElement('div');
 
+Object.assign(progressBarContainer.style, {
+  position: "absolute",
+  bottom: "20px",
+  left: "20px",
+  width: "calc(100% - 40px)",
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  zIndex: "1000"
+});
 
-// Add progress bar to the body
+progressLabel.textContent = "NAVIGATE";
+Object.assign(progressLabel.style, {
+  color: "#fff",
+  fontSize: "14px",
+  fontWeight: "600",
+  textTransform: "uppercase",
+  letterSpacing: "0.05em",
+  minWidth: "80px",
+  opacity: "0.9",
+  flexShrink: "0"
+});
+
+const progressBarInner = document.createElement('div');
+Object.assign(progressBarInner.style, {
+  position: "relative",
+  flex: "1",
+  height: "8px",
+  backgroundColor: "rgba(255, 255, 255, 0.2)",
+  borderRadius: "4px",
+  overflow: "hidden"
+});
+
+Object.assign(progressBar.style, {
+  height: "100%",
+  backgroundColor: "white",
+  width: "0%",
+  pointerEvents: "none",
+  transition: "width 0.2s ease"
+});
+
+progressInput.type = "range";
+progressInput.min = "0";
+progressInput.max = String(messages.length - 1);
+progressInput.value = "0";
+Object.assign(progressInput.style, {
+  position: "absolute",
+  top: "0",
+  left: "0",
+  width: "100%",
+  height: "100%",
+  cursor: "pointer",
+  opacity: "0",
+  zIndex: "2"
+});
+
+progressBarInner.appendChild(progressBar);
+progressBarInner.appendChild(progressInput);
+progressBarContainer.appendChild(progressLabel);
+progressBarContainer.appendChild(progressBarInner);
 document.body.appendChild(progressBarContainer);
-progressBarContainer.appendChild(progressBar);
+
+let currentShowCover = null;
+let currentHideCover = null;
+
+progressInput.addEventListener('input', (e) => {
+  const newIdx = parseInt(e.target.value);
+  
+  if (!barrel.classList.contains("playing")) return;
+  
+  sharedAudio.pause();
+  sharedAudio.currentTime = 0;
+  
+  if (currentShowCover) {
+    aperture.removeEventListener("mouseenter", currentShowCover);
+    aperture.removeEventListener("touchstart", currentShowCover);
+  }
+  if (currentHideCover) {
+    aperture.removeEventListener("mouseleave", currentHideCover);
+    aperture.removeEventListener("touchend", currentHideCover);
+  }
+  currentShowCover = null;
+  currentHideCover = null;
+  
+  idx = newIdx;
+  stopStarfield();
+  james.style.display = "none";
+  coverImage.style.display = "none";
+  centerText.classList.remove("show");
+  barrel.classList.remove("playing");
+  barrel.classList.add("pulse");
+  spinHint.classList.remove("hidden");
+  
+  spinHint.textContent = hints[idx] || "Tap (›)";
+  
+  progressBar.style.width = `${((idx + 1) / messages.length) * 100}%`;
+  progressInput.value = idx;
+});
+
+function resetToFirstSlide() {
+  idx = -1;
+  stopStarfield();
+  james.style.display = "none";
+  coverImage.style.display = "none";
+  centerText.classList.remove("show");
+  centerText.textContent = "";
+  spinHint.textContent = "Tap | Touch";
+  spinHint.classList.remove("hidden");
+  barrel.classList.remove("playing");
+  barrel.classList.add("pulse");
+  
+  sharedAudio.pause();
+  sharedAudio.currentTime = 0;
+  
+  centerText.removeEventListener("click", resetToFirstSlide);
+  coverImage.classList.remove("cover-spin");
+  progressBar.style.width = "0%";
+  progressInput.value = 0;
+}
 
 function showMessage(i) {
-    const m = messages[i % messages.length];
-    
-    // When showing a slide cover (not the final logos)
-if (m.cover && i !== 8) {   
-  coverImage.src = m.cover;
-  coverImage.style.display = "block";
-  coverImage.classList.add("cover-spin"); // start spinning
-} else {
+  const m = messages[i];
+  
+  stopStarfield();
+  james.style.display = "none";
   coverImage.style.display = "none";
-  coverImage.classList.remove("cover-spin"); // stop spinning
-}
-    
-    
-    /* Reset UI */
-    stopStarfield();
-    james.style.display = "none";
+  centerText.classList.remove("show");
+  centerText.textContent = "";
+  spinHint.classList.add("hidden");
+  barrel.classList.remove("pulse");
+  barrel.classList.add("playing");
+
+  playThroughGain(m.music);
+  
+  const showCover = () => {
+    if (m.cover) {
+      coverImage.src = m.cover;
+      coverImage.style.display = "block";
+      coverImage.classList.add("cover-spin");
+    }
+    if (m.line) {
+      centerText.textContent = m.line;
+      centerText.classList.add("show");
+    }
+  };
+  
+  const hideCover = () => {
     coverImage.style.display = "none";
+    coverImage.classList.remove("cover-spin");
     centerText.classList.remove("show");
-    centerText.textContent = "";
-    spinHint.classList.add("hidden");
-    barrel.classList.add("playing");
+  };
+  
+  if (currentShowCover) {
+    aperture.removeEventListener("mouseenter", currentShowCover);
+    aperture.removeEventListener("touchstart", currentShowCover);
+  }
+  if (currentHideCover) {
+    aperture.removeEventListener("mouseleave", currentHideCover);
+    aperture.removeEventListener("touchend", currentHideCover);
+  }
+  
+  currentShowCover = showCover;
+  currentHideCover = hideCover;
+  
+  if (i !== messages.length - 1) {
+    startStarfield();
+    
+    aperture.addEventListener("mouseenter", showCover);
+    aperture.addEventListener("mouseleave", hideCover);
+    aperture.addEventListener("touchstart", showCover);
+    aperture.addEventListener("touchend", hideCover);
+  }
 
-    /* Play audio correctly */
-    playThroughGain(m.music);
-
-    // Hover/touch display
-    function showTextCover() {
-      if (i === 8) return; 
-      if (m.line) { centerText.textContent = m.line; centerText.classList.add("show"); }
-      if (m.cover) { coverImage.src = m.cover; coverImage.style.display = "block"; }
-    }
-    function hideTextCover() {
-      if (i === 8) return; 
-      centerText.classList.remove("show");
-      coverImage.style.display = "none";
-    }
-    aperture.addEventListener("mouseenter", showTextCover);
-    aperture.addEventListener("mouseleave", hideTextCover);
-    aperture.addEventListener("touchstart", showTextCover);
-    aperture.addEventListener("touchend", hideTextCover);
-
- /* James final slide */
-if (i === 8) {
-  // No call to startStarfield() here
-
-  const logos = [
-    // Add your logos (image URLs) here
-  ];
-
-  let l = 0;
-  coverImage.style.display = "block";  // Show the cover image initially
-
-  // Function to show the next logo
-  function showNextLogo() {
-    if (l >= logos.length) {
-      // Hide the image after all logos are shown
-      coverImage.style.display = "none";
-
-      // Make 'james' visible first
-      james.style.display = "block";
-
-      // Delay setting the text content after 2 seconds
-      setTimeout(() => {
-        centerText.textContent = "I'm James Tobin.";  // Set the text content
-        centerText.classList.add("show");  // Trigger fade-in effect
-      }, 2000);  // Delay the text for 2 seconds after the image is hidden
-
-      // Add the click event listener to reset to the first slide when clicked
-      centerText.addEventListener("click", resetToFirstSlide);
+  onTrackEnded = () => {
+    if (idx === messages.length - 1) {
+      resetToFirstSlide();
       return;
     }
 
-    // Show the next image
-    coverImage.src = logos[l];
-    l++;
-
-    // Transition to the next logo after a short delay
-    setTimeout(showNextLogo, 550);  // Adjust the delay between images if necessary
-  }
-
-  // Start showing the first image
-  showNextLogo();
-
-} else {
-  // Handle starfield or other elements if needed
-  startStarfield();
-}
-    // Update progress bar
-    const totalSlides = messages.length;
-    const progressPercentage = ((i + 1) / totalSlides) * 100;
-    progressBar.style.width = `${progressPercentage}%`;  
-
-    currentMusic.onended = () => {
-      if (idx === messages.length - 1) {
-        resetToFirstSlide();
-        return;
-      }
-
-      stopStarfield();
-      james.style.display = "none";
-      coverImage.style.display = "none";
-      barrel.classList.remove("playing");
-      spinHint.classList.remove("hidden");
-
-      const hints = [
-        "Tap", "Tap (›)", "Clues? (›)", "Story? (›)", "Threads (›)",
-        "Listen? (›)", "Look (›)",
-        "Shards? (›)", "Who? (›)",
-        " "
-      ];
-
-     // if (idx === messages.length - 1) {
-//     resetToFirstSlide();  
-//     return;
-// }
-      spinHint.textContent = hints[idx + 1] || "Tap";
-
-      aperture.removeEventListener("mouseenter", showTextCover);
-      aperture.removeEventListener("mouseleave", hideTextCover);
-      aperture.removeEventListener("touchstart", showTextCover);
-      aperture.removeEventListener("touchend", hideTextCover);
-    };
-}
-
-
-
-barrel.addEventListener("click", () => {
-  audioCtx.resume();  
-
-  if (dragging) return;
-  if (barrel.classList.contains("playing")) return;
-
- if (!firstClickHintShown) {
-  firstClickHintShown = true;
-
-  // Show first-click hint in the original spinHint element
-  spinHint.textContent = "Play Audio? (›)";
-  spinHint.classList.remove("hidden");
-
-  // Optional: add a click listener to start
-  spinHint.onclick = () => {
-    spinHint.classList.add("hidden");
-    idx = 0;
-    showMessage(idx);
+    stopStarfield();
+    coverImage.style.display = "none";
+    coverImage.classList.remove("cover-spin");
+    centerText.classList.remove("show");
+    barrel.classList.remove("playing");
+    spinHint.classList.remove("hidden");
+    spinHint.textContent = "Tap (›)";
+    
+    aperture.removeEventListener("mouseenter", showCover);
+    aperture.removeEventListener("mouseleave", hideCover);
+    aperture.removeEventListener("touchstart", showCover);
+    aperture.removeEventListener("touchend", hideCover);
+    
+    currentShowCover = null;
+    currentHideCover = null;
   };
 
-  return; // stop further barrel click processing
+  if (i === messages.length - 1) {
+    stopStarfield();
+    coverImage.style.display = "none";
+    james.style.display = "block";
 
- // Stop barrel click here for the first tap
+    setTimeout(() => {
+      centerText.textContent = "I'm James Tobin.";
+      centerText.classList.add("show");
+      centerText.addEventListener("click", resetToFirstSlide, { once: true });
+    }, 2000);
   }
 
-  // Normal tap logic
+  progressBar.style.width = `${((i + 1) / messages.length) * 100}%`;
+  progressInput.value = i;
+}
+
+barrel.addEventListener("click", (e) => {
+  if (dragging || draggingPosition) return;
+  if (barrel.classList.contains("playing")) return;
+
+  audioCtx.resume();
+
+  if (!firstClickShown) {
+    firstClickShown = true;
+    spinHint.textContent = "Play Audio? (›)";
+    
+    spinHint.onclick = () => {
+      spinHint.classList.add("hidden");
+      idx = 0;
+      showMessage(idx);
+    };
+    return;
+  }
+
   idx++;
-  showMessage(idx);  
+  if (idx < messages.length) {
+    showMessage(idx);
+  }
 });
 
-/* -------------------- VOLUME DRAG (GainNode) -------------------- */
-
-function getVolume(e){
+function getVolume(e) {
   const rect = barrel.getBoundingClientRect();
-  const cy = rect.top + rect.height/2;
-  const radius = rect.height/2;
-
-  let y = e.clientY;
-  if(e.touches) y = e.touches[0].clientY;
-
-  let v = (cy - y + radius) / (2*radius);
-  return Math.min(Math.max(v,0),1);
+  const cy = rect.top + rect.height / 2;
+  const radius = rect.height / 2;
+  const y = e.touches ? e.touches[0].clientY : e.clientY;
+  const v = (cy - y + radius) / (2 * radius);
+  return Math.min(Math.max(v, 0), 1);
 }
 
-function startDrag(e){
-  if(!barrel.classList.contains("playing")) return;
-  dragging = true;
-  e.preventDefault();
-  volumeIndicator.classList.add("show");
-  updateVolume(e);
-}
-function doDrag(e){
-  if(!dragging) return;
-  e.preventDefault();
-  updateVolume(e);
-}
-function stopDrag(){
-  dragging = false;
-  volumeIndicator.classList.remove("show");
+let dragTimeout;
+
+barrel.addEventListener("mousedown", (e) => {
+  const startTime = Date.now();
+  const startX = e.clientX;
+  const startY = e.clientY;
+  
+  const checkDrag = () => {
+    const timeDiff = Date.now() - startTime;
+    const distance = Math.sqrt(Math.pow(e.clientX - startX, 2) + Math.pow(e.clientY - startY, 2));
+    
+    if (timeDiff > 150 && barrel.classList.contains("playing")) {
+      dragging = true;
+      volumeIndicator.classList.add("show");
+    } else if (distance > 10) {
+      draggingPosition = true;
+      barrel.classList.add("dragging-position");
+      dragStartX = e.clientX - barrelX;
+      dragStartY = e.clientY - barrelY;
+    }
+  };
+  
+  dragTimeout = setTimeout(checkDrag, 150);
+  
+  const moveHandler = (moveE) => {
+    const distance = Math.sqrt(Math.pow(moveE.clientX - startX, 2) + Math.pow(moveE.clientY - startY, 2));
+    if (distance > 10) {
+      clearTimeout(dragTimeout);
+      draggingPosition = true;
+      barrel.classList.add("dragging-position");
+      dragStartX = moveE.clientX - barrelX;
+      dragStartY = moveE.clientY - barrelY;
+      window.removeEventListener("mousemove", moveHandler);
+    }
+  };
+  
+  window.addEventListener("mousemove", moveHandler);
+  setTimeout(() => window.removeEventListener("mousemove", moveHandler), 200);
+});
+
+barrel.addEventListener("touchstart", (e) => {
+  const startTime = Date.now();
+  const touch = e.touches[0];
+  const startX = touch.clientX;
+  const startY = touch.clientY;
+  
+  const checkDrag = () => {
+    const timeDiff = Date.now() - startTime;
+    
+    if (timeDiff > 150 && barrel.classList.contains("playing")) {
+      dragging = true;
+      volumeIndicator.classList.add("show");
+    }
+  };
+  
+  dragTimeout = setTimeout(checkDrag, 150);
+  
+  const moveHandler = (moveE) => {
+    const touch = moveE.touches[0];
+    const distance = Math.sqrt(Math.pow(touch.clientX - startX, 2) + Math.pow(touch.clientY - startY, 2));
+    if (distance > 10) {
+      clearTimeout(dragTimeout);
+      draggingPosition = true;
+      barrel.classList.add("dragging-position");
+      dragStartX = touch.clientX - barrelX;
+      dragStartY = touch.clientY - barrelY;
+      window.removeEventListener("touchmove", moveHandler);
+    }
+  };
+  
+  window.addEventListener("touchmove", moveHandler, { passive: true });
+  setTimeout(() => window.removeEventListener("touchmove", moveHandler), 200);
+}, { passive: true });
+
+window.addEventListener("mousemove", (e) => {
+  if (draggingPosition) {
+    barrelX = e.clientX - dragStartX;
+    barrelY = e.clientY - dragStartY;
+    barrel.style.left = `${barrelX}px`;
+    barrel.style.top = `${barrelY}px`;
+  } else if (dragging) {
+    const v = getVolume(e);
+    gainNode.gain.value = v;
+    volumeIndicator.textContent = `Volume: ${Math.round(v * 100)}%`;
+    
+    volumeSlider.value = Math.round(v * 100);
+    volumeFill.style.width = `${Math.round(v * 100)}%`;
+    
+    barrel.classList.add("dragging-volume");
+    outerRing.classList.add("active");
+  }
+});
+
+window.addEventListener("touchmove", (e) => {
+  if (draggingPosition) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    barrelX = touch.clientX - dragStartX;
+    barrelY = touch.clientY - dragStartY;
+    barrel.style.left = `${barrelX}px`;
+    barrel.style.top = `${barrelY}px`;
+  } else if (dragging) {
+    e.preventDefault();
+    const v = getVolume(e);
+    gainNode.gain.value = v;
+    volumeIndicator.textContent = `Volume: ${Math.round(v * 100)}%`;
+    
+    volumeSlider.value = Math.round(v * 100);
+    volumeFill.style.width = `${Math.round(v * 100)}%`;
+    
+    barrel.classList.add("dragging-volume");
+    outerRing.classList.add("active");
+  }
+}, { passive: false });
+
+function stopDrag() {
+  clearTimeout(dragTimeout);
+  
+  if (dragging) {
+    // Remove classes immediately for visual feedback
+    barrel.classList.remove("dragging-volume");
+    outerRing.classList.remove("active");
+    
+    // Reset dragging state after a short delay to prevent click events
+    setTimeout(() => { 
+      dragging = false; 
+    }, 100);
+  }
+  
+  if (draggingPosition) {
+    manuallyPositioned = true;
+    barrel.classList.remove("dragging-position");
+    setTimeout(() => { 
+      draggingPosition = false; 
+    }, 100);
+  }
+  
+  // Hide volume indicator with slight delay for better UX
+  setTimeout(() => {
+    volumeIndicator.classList.remove("show");
+  }, 500);
 }
 
-function updateVolume(e){
-  const v = getVolume(e);
-  gainNode.gain.value = v;
-  volumeIndicator.textContent = `Volume: ${Math.round(v*100)}%`;
-}
-
-barrel.addEventListener("mousedown", startDrag);
-barrel.addEventListener("touchstart", startDrag);
-window.addEventListener("mousemove", doDrag);
-window.addEventListener("touchmove", doDrag, { passive:false });
 window.addEventListener("mouseup", stopDrag);
 window.addEventListener("touchend", stopDrag);
 
-/* Center circle */
-function centerBarrel() {
-  const rect = barrel.getBoundingClientRect();
-  const t = (window.innerHeight - rect.height) / 2;
-  const l = (window.innerWidth - rect.width) / 2;
-  barrel.style.position = "absolute";
-  barrel.style.top = `${t}px`;
-  barrel.style.left = `${l}px`;
-}
-window.addEventListener("load", centerBarrel);
-window.addEventListener("resize", centerBarrel);
-window.addEventListener("orientationchange", centerBarrel);
-
-</script>
-
-<script>
-/* 
-// Go to the last slide on page load (may read error, but deliberate) 
-/* DELIBERATE_SYNTAX_ERROR: do not uncomment
-// window.addEventListener("load", () => {
-  // idx = messages.length 0;   // set index to last slide 
-  // showMessage(idx);             // show last slide immediately
-// });
-*/
-</script>
-<style>
-  /* Initially hide body content, apply dark background */
-  body {
-    opacity: 0; /* Hide content initially */
-    visibility: hidden; /* Hide from layout */
-    background-color: rgba(0, 0, 0, 1); /* Dark background */
-    transition: opacity 1s ease-out; /* Smooth fade-in */
-  }
-</style>
-
-
-  <!-- 
-<script>
-  window.addEventListener('load', function () {
-    // Now, apply scaling and show the page content
-    scaleUI();
-
-    // Once scaling is done, fade-in the content
-    setTimeout(function () {
-      // Show content
-      document.body.style.visibility = 'visible';  // Make content visible
-      document.body.style.opacity = '1';  // Fade in content
-    }, 500);  // Delay to ensure scaling logic is applied first
-  });
-
-  // Function to dynamically scale the interactive UI for all screen sizes
-  function scaleUI() {
-    const barrel = document.getElementById('barrel');
-    const aperture = document.getElementById('aperture');
-    const spinHint = document.getElementById('spinHint');
-    const centerText = document.getElementById('centerText');
-
-    // Use the smaller viewport dimension
-    const vmin = Math.min(window.innerWidth, window.innerHeight);
-
-    // Scale barrel: 60% of vmin, min 300px, max 2000px
-    const barrelSize = Math.min(Math.max(vmin * 0.6, 300), 2000);
-    barrel.style.width = `${barrelSize}px`;
-    barrel.style.height = `${barrelSize}px`;
-    barrel.style.position = 'absolute';
-    barrel.style.top = `${(window.innerHeight - barrelSize) / 2}px`;
-    barrel.style.left = `${(window.innerWidth - barrelSize) / 2}px`;
-
-    // Scale aperture: 60% of barrel size
-    const apertureSize = barrelSize * 0.6;
-    aperture.style.width = `${apertureSize}px`;
-    aperture.style.height = `${apertureSize}px`;
-    aperture.style.top = '50%';
-    aperture.style.left = '50%';
-    aperture.style.transform = 'translate(-50%, -50%)';
-
-    // Scale spin-hint text: 1.5% of vmin, min 12px, max 50px
-    spinHint.style.fontSize = `${Math.min(Math.max(vmin * 0.015, 12), 50)}px`;
-
-    // Scale center-text: 2% of vmin, min 14px, max 60px
-    centerText.style.fontSize = `${Math.min(Math.max(vmin * 0.02, 14), 60)}px`;
-
-    // Ensure elements are visible after scaling is applied
-    [barrel, aperture, spinHint, centerText].forEach(el => {
-      el.style.opacity = '1'; // Ensure they are visible
-    });
-  }
-
-  // Create scaling overlay to show during scaling process
-  function createScalingOverlay() {
-    const overlay = document.createElement('div');
-    overlay.id = 'scalingOverlay';
-    overlay.style.position = 'fixed';
-    overlay.style.top = '0';
-    overlay.style.left = '0';
-    overlay.style.width = '100%';
-    overlay.style.height = '100%';
-    overlay.style.backgroundColor = 'rgba(0,0,0,0.8)'; // Dark overlay
-    overlay.style.color = '#fff';
-    overlay.style.display = 'flex';
-    overlay.style.alignItems = 'center';
-    overlay.style.justifyContent = 'center';
-    overlay.style.fontSize = '2rem';
-    overlay.style.zIndex = '9999';
-    overlay.textContent = 'Scaling...';
-    document.body.appendChild(overlay);
-
-    // Fade-out the overlay after scaling
-    setTimeout(() => {
-      overlay.style.transition = 'opacity 0.5s ease-out';
-      overlay.style.opacity = '0';
-      setTimeout(() => overlay.remove(), 500);  // Remove after fade-out
-    }, 500);
-
-    return overlay;
-  }
-
-  // Function to detect "mobile" viewport
-  function isMobileViewport() {
-    return window.innerWidth <= 768; // Simple mobile breakpoint
-  }
-
-  // Run scaleUI on load with overlay
-  window.addEventListener('load', () => {
-    // Start scaling immediately to avoid flash of unstyled content
-    scaleUI();
-
-    const overlay = createScalingOverlay();
-
-    const runScaling = () => {
-      scaleUI();
-    };
-
-    // Run scaling logic immediately after load
-    if (isMobileViewport()) {
-      setTimeout(runScaling, 50); // Delay for mobile viewport stabilization
-    } else {
-      runScaling(); // Desktop: run immediately
-    }
-
-    // Optional: run once more after a short timeout to ensure final layout
-    setTimeout(runScaling, 100);
-  });
-
-  // Throttle resize events to avoid rapid size changes
-  let resizeTimeout;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(scaleUI, 50);
-  });
-
-  // Orientation change fix for mobile
-  window.addEventListener('orientationchange', () => {
-    setTimeout(scaleUI, 150);
-  });
-</script>
-
--->
-
+function scaleUI() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
   
+  const barrelRect = barrel.getBoundingClientRect();
+  const barrelSize = barrelRect.width;
+  
+  if (!manuallyPositioned) {
+    barrelX = (vw - barrelSize) / 2;
+    barrelY = (vh - barrelSize) / 2;
+  }
+  
+  barrel.style.left = `${barrelX}px`;
+  barrel.style.top = `${barrelY}px`;
+  
+  if (starCanvas.style.display === "block") {
+    resizeCanvas();
+  }
+}
+
+let resizeTimeout;
+function handleResize() {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(scaleUI, 100);
+}
+
+window.addEventListener('load', scaleUI);
+window.addEventListener('resize', handleResize);
+window.addEventListener('orientationchange', () => {
+  setTimeout(scaleUI, 300);
+});
+</script>
+
 <script>
-  function scaleUI() {
-    const barrel = document.getElementById('barrel');
-    const aperture = document.getElementById('aperture');
-    const spinHint = document.getElementById('spinHint');
-    const centerText = document.getElementById('centerText');
+(function() {
+  const dynamicStyle = document.createElement('style');
+  dynamicStyle.setAttribute('id', 'dynamic-highres-style');
+  document.head.appendChild(dynamicStyle);
 
-    const vmin = Math.min(window.innerWidth, window.innerHeight);
+  function applyHighResSizing() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const dpr = window.devicePixelRatio || 1;
 
-    // Barrel size & center
-    const barrelSize = Math.min(Math.max(vmin * 0.6, 300), 2000);
-    barrel.style.width = `${barrelSize}px`;
-    barrel.style.height = `${barrelSize}px`;
-    barrel.style.position = 'absolute';
-    barrel.style.top = `${(window.innerHeight - barrelSize) / 2}px`;
-    barrel.style.left = `${(window.innerWidth - barrelSize) / 2}px`;
+    // Detect orientation
+    const isPortrait = vh > vw;
 
-    // Aperture size
-    const apertureSize = barrelSize * 0.6;
-    aperture.style.width = `${apertureSize}px`;
-    aperture.style.height = `${apertureSize}px`;
-    aperture.style.top = '50%';
-    aperture.style.left = '50%';
-    aperture.style.transform = 'translate(-50%, -50%)';
+    // Base barrel size: use width in portrait, vmin in landscape
+    let barrelSize = isPortrait ? 0.70 * vw : 0.70 * Math.min(vw, vh);
+
+    // Gentle boost for large screens
+    if (vw >= 2560) barrelSize *= 1.05;
+    if (vw >= 3840) barrelSize *= 1.15;
+    if (vw >= 5120) barrelSize *= 1.25;
+    if (dpr >= 2)   barrelSize *= 1.05;
+
+    // Small device shrink
+    if (vw <= 480) barrelSize *= 0.85;
+
+    // Clamp between 200px (phones) and 1200px (big monitors)
+    barrelSize = Math.max(200, Math.min(barrelSize, 1200));
+
+    // Font scaling
+    let rootFont = 16;
+    if (vw >= 2560) rootFont = 17;
+    if (vw >= 3840) rootFont = 19;
+    if (vw >= 5120) rootFont = 21;
+    if (dpr >= 2)   rootFont += 1;
+    if (vw <= 480)  rootFont = 14;
+    rootFont = Math.min(rootFont, 22);
 
     // Text sizes
-    spinHint.style.fontSize = `${Math.min(Math.max(vmin * 0.015, 12), 50)}px`;
-    centerText.style.fontSize = `${Math.min(Math.max(vmin * 0.02, 14), 60)}px`;
+    const hintFontPx   = vw <= 480 ? 12 : Math.round((2.0 / 100) * (isPortrait ? vw : Math.min(vw, vh)));
+    const centerFontPx = vw <= 480 ? 14 : Math.round((2.6 / 100) * (isPortrait ? vw : Math.min(vw, vh)));
+    const volFontPx    = Math.round(rootFont * 1.3);
 
-    // Force repaint for iOS
-    barrel.offsetHeight;
-  }
+    dynamicStyle.textContent = `
+      html { font-size: ${rootFont}px; }
+      .barrel {
+        width: ${barrelSize}px !important;
+        height: ${barrelSize}px !important;
+        max-width: none !important;
+        max-height: none !important;
+      }
+      .aperture { width: 60% !important; height: 60% !important; }
+      .spin-hint { font-size: ${hintFontPx}px !important; }
+      .center-text { font-size: ${centerFontPx}px !important; }
+      .volume-indicator { font-size: ${volFontPx}px !important; }
+      body > div[style*="width: calc(100% - 40px)"][style*="display: flex"] div[style*="height: 8px"] {
+        height: ${vw <= 480 ? 6 : 10}px !important;
+      }
+    `;
 
-  // Debounced handler for resizing
-  let resizeTimeout;
-  function handleResize() {
-    cancelAnimationFrame(resizeTimeout);
-    resizeTimeout = requestAnimationFrame(() => {
-      scaleUI();
-    });
-  }
-
-  // Initial load
-  window.addEventListener('load', () => {
-    scaleUI();
-    // Fade in
-    document.body.style.visibility = 'visible';
-    document.body.style.opacity = '1';
-  });
-
-  // Listen for resize & orientation change
-  window.addEventListener('resize', handleResize);
-  window.addEventListener('orientationchange', () => {
-    // Wait one frame to ensure viewport updates
-    requestAnimationFrame(scaleUI);
-  });
-</script>
-
-<!-- 
-    Script to intercept the first click on the page,
-    show a confirmation alert about audio, 
-    and only play the video/audio if the user acknowledges.
--->
-
- <!-- <script>
-let firstClickHandled = false;
-
-document.addEventListener('click', function(event) {
-    // Only intercept the VERY FIRST click
-    if (!firstClickHandled) {
-        event.stopImmediatePropagation();  // stop other click handlers
-        event.preventDefault();            // stop default behavior
-
-        let userAcknowledged = confirm("Heads up: audio’s part of this experience");
-
-        if (userAcknowledged) {
-            firstClickHandled = true;
-
-            // Manually trigger the original click again
-            event.target.click();
-        }
-        // If Cancel, do nothing – they stay on the same screen
+    // Re-center barrel
+    const barrel = document.getElementById('barrel');
+    if (barrel) {
+      const rect = barrel.getBoundingClientRect();
+      barrel.style.left = `${(vw - rect.width) / 2}px`;
+      barrel.style.top  = `${(vh - rect.height) / 2}px`;
     }
-}, true); // use capture mode to intercept BEFORE other handlers
+
+    // Resize starfield canvas if visible
+    const starCanvas = document.getElementById('starfield');
+    const aperture = document.getElementById('aperture');
+    if (starCanvas && aperture && starCanvas.style.display === 'block') {
+      starCanvas.width  = aperture.offsetWidth;
+      starCanvas.height = aperture.offsetHeight;
+    }
+  }
+
+  window.addEventListener('load', applyHighResSizing);
+  window.addEventListener('resize', applyHighResSizing);
+  window.addEventListener('orientationchange', () => setTimeout(applyHighResSizing, 200));
+})();
 </script>
-
--->
-
-
-
-
 
 </body>
 </html>
+
+
