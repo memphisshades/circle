@@ -1446,39 +1446,58 @@ window.addEventListener('orientationchange', () => {
 })();
 </script>
 
-  <script>
-   // --- PASTE THIS CODE AT THE END OF YOUR MAIN SCRIPT BLOCK ---
+<script>
+// NOTE: Assuming navOverlay, openNavBtn, and closeBtn were declared as global
+// constants earlier in your main script block, as implied by your previous code.
 
-// This function runs automatically once the page is fully structured (or 'loaded')
+// 1. Assign IDs (CRITICAL for getting elements by ID later)
+navOverlay.id = "navOverlay";
+openNavBtn.id = "openNavBtn";
+
+// 2. Define the function to run when the page has fully loaded
 function openNavOverlayOnLoad() {
-    // Since navOverlay is a global const inside this script, we can reference it directly.
-    // If we were in a separate script, we'd use document.getElementById('navOverlay').
+    // Get elements by ID to avoid scope issues, although they should be global here
+    const overlay = document.getElementById('navOverlay');
+    const navButton = document.getElementById('openNavBtn');
 
-    // 1. Open the overlay
-    navOverlay.style.display = "block";
+    if (overlay) {
+        // Open the overlay
+        overlay.style.display = "block";
+    }
     
-    // 2. Hide the main navigation button (since the menu is now open)
-    // NOTE: openNavBtn is declared later, so we must find it by ID or wait for 'load'.
-    const openNavBtn = document.getElementById('openNavBtn');
-    if (openNavBtn) {
-        openNavBtn.style.display = "hidden";
+    // 3. Hide the main navigation button when the overlay opens
+    if (navButton) {
+        // Must use "none", not "hidden"
+        navButton.style.display = "none";
     }
 }
 
-// Ensure the ID is set for external reference later:
-navOverlay.id = "navOverlay";
-openNavBtn.id = "openNavBtn"; // Make sure you add this ID to the button too!
-
-// We use 'load' to be safe, ensuring all images and elements are ready.
+// Attach the function to the load event to run once all resources are ready
 window.addEventListener('load', openNavOverlayOnLoad);
 
-// You should also update your close button logic to show the openNavBtn again
+// 4. Update the close button logic
 closeBtn.addEventListener('click', () => {
+    // Hide the overlay using the correct CSS value: "none"
     navOverlay.style.display = "none";
-    openNavBtn.style.display = "block"; // <-- Ensure this is here
+
+    // Requirement: The menu button must not be visible when the overlay is closed.
+    // Therefore, we DO NOT set openNavBtn.style.display = "block"; here.
+    // It remains hidden as per its default style.
 });
 
-// --- END OF CODE TO PASTE ---
+// Final Check: Ensure the initial style is correct (This is done in the creation block)
+// You MUST ensure the initial creation style for openNavBtn remains:
+// display: "none"
+
+// You also need to update the card listener logic, if it was showing the button:
+const navCards = document.querySelectorAll('#navGrid > div'); // Adjust selector as needed
+navCards.forEach(card => {
+    card.addEventListener('click', () => {
+        navOverlay.style.display = "none";
+        // DO NOT show the button here either
+        // ... rest of your card logic
+    });
+});
 </script>
 
 </body>
