@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>James Tobin</title>
+<meta name="description" content="James Tobin refuses to be reduced to labels. A portrait told through songs, prompts and symbols.">
+<meta name="author" content="James Tobin">
+<meta property="og:type" content="website">
+<meta property="og:title" content="James Tobin">
+<meta property="og:description" content="A portrait told through songs, prompts and symbols. Tap the disc.">
+<meta property="og:url" content="https://www.jamestobin.xyz">
+<meta property="og:image" content="https://www.jamestobin.xyz/favicon.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="apple-touch-icon" href="favicon.jpg">
+<style>
+:root{--bg:#050505;--red:#c4002f;--text:#f2f2f2;--dim:#9a9a9a}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+body{display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:max(16px,env(safe-area-inset-top)) 20px max(16px,env(safe-area-inset-bottom));overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.bar{width:100%;max-width:640px;display:flex;align-items:center;gap:12px}
+.bar button{background:none;border:1px solid #444;border-radius:999px;padding:8px 14px;font-size:.85rem;white-space:nowrap}
+.bar button[aria-pressed=true]{border-color:var(--red);color:#fff}
+.bar input{flex:1;accent-color:var(--red)}
+.role{margin:0;text-align:center;font-size:1.05rem;line-height:1.4;max-width:30ch}
+.role small{display:block;margin-top:6px;color:var(--dim);font-size:.85rem}
+.disc{position:relative;width:min(72vw,52vh,620px);aspect-ratio:1;border-radius:50%;border:0;padding:0;background:#000;overflow:hidden;box-shadow:0 0 50px rgba(196,0,47,.35);transition:box-shadow .3s}
+.disc:hover{box-shadow:0 0 90px rgba(196,0,47,.75)}
+.disc.idle{animation:breathe 2.4s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.025)}}
+.disc canvas,.disc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;pointer-events:none}
+.disc img{display:none}
+.disc img.spin{animation:spin 8s linear infinite}
+.disc.paused img.spin{animation-play-state:paused}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hint{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20%;font-size:clamp(.8rem,2.2vmin,1.2rem);letter-spacing:.1em;text-transform:uppercase;opacity:.8;pointer-events:none}
+.now{min-height:3.6em;text-align:center;max-width:44ch;line-height:1.45}
+.now b{display:block;font-weight:600}
+.now span{color:var(--dim);font-size:.9rem}
+.nav{background:none;border:0;color:var(--dim);font-size:.9rem;letter-spacing:.08em;text-transform:uppercase;padding:10px}
+dialog{max-width:760px;width:calc(100% - 32px);max-height:88vh;overflow:auto;background:#0b0b0b;color:var(--text);border:1px solid #333;border-radius:12px;padding:28px}
+dialog::backdrop{background:rgba(0,0,0,.85)}
+dialog p{line-height:1.7;margin:0 0 1em;max-width:62ch}
+dialog ol{list-style:none;margin:24px 0;padding:0;display:grid;gap:10px}
+dialog ol button{width:100%;text-align:left;background:#161616;border:1px solid #2a2a2a;border-radius:8px;padding:14px}
+dialog ol button:hover{border-color:var(--red)}
+dialog ol small{display:block;color:var(--dim);margin-top:4px}
+.close{background:var(--red);border:0;border-radius:6px;padding:10px 28px}
+@media (prefers-reduced-motion:reduce){.disc.idle,.disc img.spin{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <button id="mute" aria-pressed="false">Sound on</button>
+  <input id="vol" type="range" min="0" max="100" value="30" aria-label="Volume">
+</div>
+
+<p class="role" id="role"><small id="nowLine"></small></p>
+
+<button class="disc idle" id="disc" aria-label="Play">
+  <canvas id="stars"></canvas>
+  <img id="cover" alt="">
+  <img id="me" alt="James Tobin" src="images/jamestobin_2.png">
+  <span class="hint" id="hint">Tap to begin</span>
+</button>
+
+<div class="now" id="now" aria-live="polite"></div>
+
+<button class="nav" id="open">Chapters &amp; manifesto</button>
+
+<dialog id="dlg" aria-label="Chapters and manifesto">
+  <p>This work is a refusal to be reduced to labels.<br>Not a résumé. Not a list of jobs.</p>
+  <p>Fragments: prompts, songs, symbols. Each tap is discovery. Each track, a metaphor for skill, experience, or transformation.</p>
+  <p>The music carries the weight of identity. The prompts are shards of language, guiding the viewer toward deeper listening, closer looking, and questioning of self.</p>
+  <p>Meaning is assembled, not given. Connection is felt, not consumed.</p>
+  <p>This is not a portfolio. It is record and inquiry. It is resistance. It is stance.</p>
+  <p><strong>I am James Tobin.</strong></p>
+  <label><input type="checkbox" id="auto"> Play the whole sequence automatically</label>
+  <ol id="list"></ol>
+  <button class="close" id="close">Close</button>
+</dialog>
+
+<noscript><p class="role">James Tobin. This site needs JavaScript to play its music.</p></noscript>
+
+<script>
+// ===== EDIT HERE =====
+const NOW = ""; // e.g. "Currently: building X / open to Y". Leave empty to hide.
+// title: add the song title if you want it shown. To add the a-ha track, copy a block and set its file.
+const tracks = [
+  {file:"media/intro.mp3",        cover:"favicon.jpg",           hint:"Tap to begin",  artist:"",               title:"", note:"Introduction"},
+  {file:"media/slide1-reduced.mp3",cover:"images/cover1.png",     hint:"Clues?",        artist:"Front 242",      title:"", note:"Industrial rhythm: headhunting"},
+  {file:"media/slide_new1.mp3",   cover:"images/cover_new1.png", hint:"Persuade?",     artist:"AIJ. Jones",     title:"", note:"Commerce rhythm: influence and persuasion"},
+  {file:"media/slide3-reduced.mp3",cover:"images/cover2.png",     hint:"Story?",        artist:"Tracy Chapman",  title:"", note:"Soulful voice: raw emotion through narrative"},
+  {file:"media/slide2-reduced.mp3",cover:"images/cover3.png",     hint:"Threads",       artist:"Kraftwerk",      title:"", note:"Electronic pulse: creative and digital skill"},
+  {file:"media/slide4-reduced.mp3",cover:"images/cover4.png",     hint:"Listen?",       artist:"Stereo MCs",     title:"", note:"Pulse of connection: tech that connects through voice"},
+  {file:"media/slide6-reduced.mp3",cover:"images/cover6.png",     hint:"Shards?",       artist:"Edie Brickell",  title:"", note:"Voice of inquiry: not defined by one skill or job"},
+  {file:"media/slide7.mp3",       cover:"",                      hint:"Who?",          artist:"Aloe Blacc",     title:"", note:"I am James Tobin: affirmation", last:true}
+];
+// =====================
+
+const $ = id => document.getElementById(id);
+const disc=$("disc"), hint=$("hint"), cover=$("cover"), me=$("me"), now=$("now");
+const AC = window.AudioContext || window.webkitAudioContext;
+const ctx = new AC(), gain = ctx.createGain();
+const audio = new Audio(); audio.preload = "auto";
+ctx.createMediaElementSource(audio).connect(gain); gain.connect(ctx.destination);
+
+let idx = -1, state = "idle", muted = false;
+const setGain = () => gain.gain.value = muted ? 0 : $("vol").value / 100;
+setGain();
+
+// stars
+const cv = $("stars"), g = cv.getContext("2d"); let stars = [], raf = 0;
+const still = matchMedia("(prefers-reduced-motion:reduce)").matches;
+function startStars(){
+  if (still) return;
+  cv.width = cv.height = disc.clientWidth;
+  stars = Array.from({length:90}, () => ({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*2+.5,vx:(Math.random()-.5)*1.2,vy:(Math.random()-.5)*1.2,c:`hsl(${350+Math.random()*10},100%,80%)`}));
+  cancelAnimationFrame(raf);
+  (function draw(){
+    g.fillStyle="#000"; g.fillRect(0,0,cv.width,cv.height);
+    for (const s of stars){
+      g.fillStyle=s.c; g.beginPath(); g.arc(s.x,s.y,s.r,0,6.283); g.fill();
+      s.x=(s.x+s.vx+cv.width)%cv.width; s.y=(s.y+s.vy+cv.height)%cv.height;
+    }
+    raf=requestAnimationFrame(draw);
+  })();
+}
+const stopStars = () => { cancelAnimationFrame(raf); g.clearRect(0,0,cv.width,cv.height); };
+
+function showHint(i){
+  state = "idle"; stopStars();
+  cover.style.display = me.style.display = "none"; cover.classList.remove("spin");
+  disc.classList.add("idle"); disc.classList.remove("paused");
+  hint.style.display = "grid"; hint.textContent = tracks[i].hint;
+  disc.setAttribute("aria-label", "Play: " + tracks[i].hint);
+  now.innerHTML = "";
+}
+
+function play(i){
+  idx = i; const t = tracks[i];
+  ctx.resume();
+  audio.src = t.file; audio.play().catch(()=>{});
+  state = "playing";
+  disc.classList.remove("idle","paused"); hint.style.display = "none";
+  disc.setAttribute("aria-label", "Pause");
+  if (t.last){ stopStars(); cover.style.display="none"; me.style.display="block"; }
+  else {
+    me.style.display = "none"; startStars();
+    if (t.cover){ cover.src = t.cover; cover.alt = t.note; cover.style.display = "block"; cover.classList.add("spin"); }
+  }
+  const who = [t.artist, t.title].filter(Boolean).join(" · ");
+  now.innerHTML = `<b>${t.last ? "I'm James Tobin." : t.note}</b>${who ? `<span>${who}</span>` : ""}`;
+}
+
+audio.addEventListener("ended", () => {
+  if (tracks[idx].last){ idx = -1; return showHint(0), hint.textContent = "Again?"; }
+  idx++; $("auto").checked ? play(idx) : showHint(idx);
+});
+
+disc.addEventListener("click", () => {
+  if (state === "playing"){ audio.pause(); state = "paused"; disc.classList.add("paused"); disc.setAttribute("aria-label","Resume"); }
+  else if (state === "paused"){ ctx.resume(); audio.play(); state = "playing"; disc.classList.remove("paused"); disc.setAttribute("aria-label","Pause"); }
+  else play(Math.max(idx, 0));
+});
+
+// sound
+$("mute").addEventListener("click", e => {
+  muted = !muted; setGain();
+  e.target.setAttribute("aria-pressed", muted); e.target.textContent = muted ? "Sound off" : "Sound on";
+});
+$("vol").addEventListener("input", () => { muted = false; $("mute").setAttribute("aria-pressed", false); $("mute").textContent = "Sound on"; setGain(); });
+
+// chapters
+const list = $("list");
+tracks.forEach((t, i) => {
+  const li = document.createElement("li"), b = document.createElement("button");
+  b.innerHTML = `${t.note}<small>${t.artist}</small>`;
+  b.onclick = () => { $("dlg").close(); audio.pause(); play(i); };
+  li.append(b); list.append(li);
+});
+$("open").onclick = () => $("dlg").showModal();
+$("close").onclick = () => $("dlg").close();
+
+if (NOW) $("nowLine").textContent = NOW;
+showHint(0);
+</script>
+</body>
+</html>
