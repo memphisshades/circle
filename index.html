@@ -326,6 +326,7 @@ let isMuted = true;
 let previousVolume = 0.25;
 
 const sharedAudio = new Audio();
+sharedAudio.crossOrigin = "anonymous";
 const sharedSource = audioCtx.createMediaElementSource(sharedAudio);
 sharedSource.connect(gainNode);
 
